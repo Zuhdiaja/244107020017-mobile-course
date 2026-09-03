@@ -10,5 +10,11 @@ Kelas: TI-3H<br>
 2. langkah ini untuk memilih device yang dipakai<br>
 ![alt text](screenshots/device.png)
 
-3. hasil tugas 1<br>
-![alt text](screenshots/tugas1.png)
+3. hasil Flutter doctor<br>
+![alt text](<screenshots/flutter doctor.png>)
+
+4. hasil Flutter devices<br>
+![alt text](<screenshots/flutter devices.png>)
+
+5. hasil tugas 1<br>
+![alt text](screenshots/tugas1.png) 
