@@ -8,7 +8,7 @@ Kelas: TI-3H<br>
 ![alt text](<screenshots/hasil awal.png>)
 
 2. hasil setelah menambahkan <br>
-_02_week_2_responsive_dashboard/screenshots/darkmode.png
+![alt text](screenshots/darkmode.png)
 
 Eksperimen <br>
 1. Ubah breakpoint dari 700 menjadi nilai lain dan amati perubahan jumlah kolom.<br>
