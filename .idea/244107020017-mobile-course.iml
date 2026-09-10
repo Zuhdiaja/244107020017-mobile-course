@@ -6,6 +6,12 @@
       <excludeFolder url="file://$MODULE_DIR$/_01_week_1_mobile_development_ecosystem_flutter_refresh/.dart_tool" />
       <excludeFolder url="file://$MODULE_DIR$/_01_week_1_mobile_development_ecosystem_flutter_refresh/.pub" />
       <excludeFolder url="file://$MODULE_DIR$/_01_week_1_mobile_development_ecosystem_flutter_refresh/build" />
+      <excludeFolder url="file://$MODULE_DIR$/_02_week_2_responsive_dashboard/.dart_tool" />
+      <excludeFolder url="file://$MODULE_DIR$/_02_week_2_responsive_dashboard/.pub" />
+      <excludeFolder url="file://$MODULE_DIR$/_02_week_2_responsive_dashboard/_02_week_2_responsive_dashboard/.dart_tool" />
+      <excludeFolder url="file://$MODULE_DIR$/_02_week_2_responsive_dashboard/_02_week_2_responsive_dashboard/.pub" />
+      <excludeFolder url="file://$MODULE_DIR$/_02_week_2_responsive_dashboard/_02_week_2_responsive_dashboard/build" />
+      <excludeFolder url="file://$MODULE_DIR$/_02_week_2_responsive_dashboard/build" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
