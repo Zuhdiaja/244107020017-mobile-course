@@ -26,3 +26,19 @@ setelah nyalakan internet lagi<br>
 3. Sementara ubah baseUrl menjadi URL salah, amati pesan error koneksi. Kembalikan setelah uji.<br>
 kode :![alt text](screanshoot/kodesalah.png) <br>
 hasil : ![alt text](screanshoot/baseurlslh.png)<br>
+
+# Praktikum 3 Pagination dasar
+1. Tambahkan method PostRepository<br>
+![<alt text>](screanshoot/tbahmethod.png)<br>
+
+2. code paged_posts.dart<br>
+![alt text](screanshoot/pagepost1.png)
+![alt text](screanshoot/pagepost2.png)
+
+3. hasil<br>
+dari HP : ![alt text](screanshoot/p3hasil.png) <br>
+dari chrome untuk tes page : ![alt text](screanshoot/p3hasil2.png)
+![alt text](screanshoot/p3hasil3.png)
+
+# AI Challenge
+1. 
