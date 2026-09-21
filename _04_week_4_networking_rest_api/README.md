@@ -41,4 +41,19 @@ dari chrome untuk tes page : ![alt text](screanshoot/p3hasil2.png)
 ![alt text](screanshoot/p3hasil3.png)
 
 # AI Challenge
-1. 
+Implementasi repository komentar berada di:
+- `lib/data/models/comment.dart`: model `Comment` dengan default aman untuk field null/hilang.
+- `lib/data/repositories/comment_repository.dart`: `fetchComments(postId)` memakai `GET /comments?postId={id}`.
+- `lib/data/comment_providers.dart`: `AsyncNotifierProvider.family` dengan propagasi exception menjadi `AsyncError`.
+
+## AI Verification Checklist
+
+- UI tidak memanggil Dio secara langsung. UI yang ada memakai provider, lalu provider memakai repository.
+- `Comment.fromJson` memakai `as num?`/`as String?` dan fallback, sehingga field `postId`, `id`, `name`, `email`, dan `body` yang null atau hilang tidak menyebabkan crash.
+- `friendlyErrorMessage` memetakan timeout, `connectionError`, `badResponse` 404, dan 500 ke pesan ramah pengguna.
+- `baseUrl`, connect timeout, send timeout, dan receive timeout 10 detik terpusat di `lib/data/api_client.dart`.
+- Test mencakup field yang hilang dan edge case konversi id numerik di `test/widget_test.dart`.
+- Validasi terakhir: `flutter analyze` menghasilkan `No issues found!` dan `flutter test` menghasilkan `All tests passed!`.
+
+- hasil AI Challenge : ![alt text](screanshoot/aic.png)<br>
+

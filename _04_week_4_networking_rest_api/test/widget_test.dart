@@ -1,30 +1,30 @@
-// This is a basic Flutter widget test.
-//
-// To perform an interaction with a widget in your test, use the WidgetTester
-// utility in the flutter_test package. For example, you can send tap and scroll
-// gestures. You can also use WidgetTester to find child widgets in the widget
-// tree, read text, and verify that the values of widget properties are correct.
-
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-
-import 'package:_04_week_4_networking_rest_api/main.dart';
+import 'package:week4_networking_rest_api/data/models/comment.dart';
 
 void main() {
-  testWidgets('Counter increments smoke test', (WidgetTester tester) async {
-    // Build our app and trigger a frame.
-    await tester.pumpWidget(const MyApp());
+  test('Comment.fromJson uses safe defaults for missing fields', () {
+    final comment = Comment.fromJson({});
 
-    // Verify that our counter starts at 0.
-    expect(find.text('0'), findsOneWidget);
-    expect(find.text('1'), findsNothing);
+    expect(comment.postId, 0);
+    expect(comment.id, 0);
+    expect(comment.name, '');
+    expect(comment.email, '');
+    expect(comment.body, '');
+  });
 
-    // Tap the '+' icon and trigger a frame.
-    await tester.tap(find.byIcon(Icons.add));
-    await tester.pump();
+  test('Comment.fromJson converts numeric ids and keeps text fields', () {
+    final comment = Comment.fromJson({
+      'postId': 4.0,
+      'id': 9,
+      'name': 'Ari',
+      'email': 'ari@example.com',
+      'body': 'Isi komentar',
+    });
 
-    // Verify that our counter has incremented.
-    expect(find.text('0'), findsNothing);
-    expect(find.text('1'), findsOneWidget);
+    expect(comment.postId, 4);
+    expect(comment.id, 9);
+    expect(comment.name, 'Ari');
+    expect(comment.email, 'ari@example.com');
+    expect(comment.body, 'Isi komentar');
   });
 }
