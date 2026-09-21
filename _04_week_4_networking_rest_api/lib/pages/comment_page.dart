@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../data/comment_providers.dart';
-import '../data/providers.dart';
+import '../data/network_errors.dart';
 
 /// Menampilkan komentar untuk satu post melalui provider, bukan Dio langsung.
 class CommentPage extends ConsumerWidget {
@@ -20,7 +20,8 @@ class CommentPage extends ConsumerWidget {
         actions: [
           IconButton(
             tooltip: 'Muat ulang komentar',
-            onPressed: () => ref.read(commentProvider(postId).notifier).refresh(),
+            onPressed: () =>
+                ref.read(commentProvider(postId).notifier).refresh(),
             icon: const Icon(Icons.refresh),
           ),
         ],
@@ -33,10 +34,7 @@ class CommentPage extends ConsumerWidget {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Text(
-                  friendlyErrorMessage(error),
-                  textAlign: TextAlign.center,
-                ),
+                Text(friendlyErrorMessage(error), textAlign: TextAlign.center),
                 const SizedBox(height: 12),
                 FilledButton(
                   onPressed: () => ref.invalidate(commentProvider(postId)),

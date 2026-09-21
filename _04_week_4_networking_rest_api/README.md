@@ -57,3 +57,18 @@ Implementasi repository komentar berada di:
 
 - hasil AI Challenge : ![alt text](screanshoot/aic.png)<br>
 
+
+# Refactoring dan Testing
+
+Refactoring dan hasil verifikasi praktikum ini didokumentasikan di
+[`docs/refactoring-testing.md`](docs/refactoring-testing.md).
+
+Fitur yang ditambahkan:
+- `PostTile` reusable untuk list post dan pagination.
+- `friendlyErrorMessage` terpusat di `lib/data/network_errors.dart`.
+- GoRouter dengan route detail `/post/:id`.
+- Unit test model, mapping error, provider sukses, dan provider error menggunakan fake repository tanpa internet.
+
+1. hasil Refactoring :<br>
+![alt text](screanshoot/ref1.png)
+![alt text](screanshoot/ref2.png)

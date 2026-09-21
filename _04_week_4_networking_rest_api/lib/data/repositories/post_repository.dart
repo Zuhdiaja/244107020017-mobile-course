@@ -12,6 +12,11 @@ class PostRepository {
     return data.whereType<Map<String, dynamic>>().map(Post.fromJson).toList();
   }
 
+  Future<Post> fetchPost(int id) async {
+    final response = await _dio.get<Map<String, dynamic>>('/posts/$id');
+    return Post.fromJson(response.data ?? const {});
+  }
+
   Future<List<Post>> fetchPostsPage({required int page, int limit = 10}) async {
     final response = await _dio.get<List>(
       '/posts',
