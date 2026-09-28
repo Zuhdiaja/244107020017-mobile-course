@@ -8,6 +8,9 @@ import 'settings_page.dart';
 final noteRepositoryProvider = Provider((ref) => NoteRepository());
 final notesProvider =
 		AsyncNotifierProvider<NotesNotifier, List<Note>>(NotesNotifier.new);
+final pendingSyncProvider = FutureProvider<int>((ref) {
+	return ref.watch(noteRepositoryProvider).countDirty();
+});
 
 class NotesNotifier extends AsyncNotifier<List<Note>> {
 	@override
@@ -19,6 +22,7 @@ class NotesNotifier extends AsyncNotifier<List<Note>> {
 		state = const AsyncLoading();
 		state = await AsyncValue.guard(() async {
 			await ref.read(noteRepositoryProvider).addNote(title: title, body: body);
+			ref.invalidate(pendingSyncProvider);
 			return ref.read(noteRepositoryProvider).fetchNotes();
 		});
 	}
@@ -27,11 +31,21 @@ class NotesNotifier extends AsyncNotifier<List<Note>> {
 		state = const AsyncLoading();
 		state = await AsyncValue.guard(() async {
 			await ref.read(noteRepositoryProvider).deleteNote(id);
+			ref.invalidate(pendingSyncProvider);
 			return ref.read(noteRepositoryProvider).fetchNotes();
 		});
 	}
 
 	Future<void> refreshNotes() async {
+		state = await AsyncValue.guard(
+			() => ref.read(noteRepositoryProvider).fetchNotes(),
+		);
+		ref.invalidate(pendingSyncProvider);
+	}
+
+	Future<void> syncPending() async {
+		await ref.read(noteRepositoryProvider).syncPending();
+		ref.invalidate(pendingSyncProvider);
 		state = await AsyncValue.guard(
 			() => ref.read(noteRepositoryProvider).fetchNotes(),
 		);
@@ -44,6 +58,7 @@ class NotesPage extends ConsumerWidget {
 	@override
 	Widget build(BuildContext context, WidgetRef ref) {
 		final notes = ref.watch(notesProvider);
+		final pendingSync = ref.watch(pendingSyncProvider);
 
 		return Scaffold(
 			appBar: AppBar(
@@ -68,6 +83,21 @@ class NotesPage extends ConsumerWidget {
 					child: Text('Gagal memuat catatan: $error'),
 				),
 				data: (items) {
+					final pending = pendingSync.value ?? 0;
+					final syncBanner = pending > 0
+							? MaterialBanner(
+								content: Text('$pending catatan menunggu sinkronisasi'),
+								actions: [
+									TextButton(
+										onPressed: () => ref
+											.read(notesProvider.notifier)
+											.syncPending(),
+										child: const Text('SYNC'),
+									),
+								],
+							)
+							: null;
+
 					if (items.isEmpty) {
 						return RefreshIndicator(
 							onRefresh: () => ref.read(notesProvider.notifier).refreshNotes(),
@@ -80,39 +110,50 @@ class NotesPage extends ConsumerWidget {
 						);
 					}
 
-					return RefreshIndicator(
-						onRefresh: () => ref.read(notesProvider.notifier).refreshNotes(),
-						child: ListView.separated(
-							padding: const EdgeInsets.all(12),
-							itemCount: items.length,
-							  separatorBuilder: (_, _) => const SizedBox(height: 8),
-							itemBuilder: (context, index) {
-								final note = items[index];
-								return Card(
-									child: ListTile(
-										title: Text(note.title),
-										subtitle: Text(
-											note.body.isEmpty
-													? 'Tidak ada isi'
-													: note.body,
-											maxLines: 2,
-											overflow: TextOverflow.ellipsis,
-										),
-										leading: Icon(
-											note.dirty ? Icons.cloud_off : Icons.cloud_done,
-										),
-										trailing: IconButton(
-											tooltip: 'Hapus catatan',
-											icon: const Icon(Icons.delete_outline),
-											onPressed: () => ref
-													.read(notesProvider.notifier)
-													.deleteNote(note.id!),
+						return Column(
+							children: [
+								?syncBanner,
+								Expanded(
+									child: RefreshIndicator(
+										onRefresh: () => ref
+											.read(notesProvider.notifier)
+											.refreshNotes(),
+										child: ListView.separated(
+											padding: const EdgeInsets.all(12),
+											itemCount: items.length,
+											separatorBuilder: (_, _) => const SizedBox(height: 8),
+											itemBuilder: (context, index) {
+												final note = items[index];
+												return Card(
+													child: ListTile(
+														title: Text(note.title),
+														subtitle: Text(
+															note.body.isEmpty
+																? 'Tidak ada isi'
+																: note.body,
+															maxLines: 2,
+															overflow: TextOverflow.ellipsis,
+														),
+														leading: Icon(
+															note.dirty
+																? Icons.cloud_off
+																: Icons.cloud_done,
+														),
+														trailing: IconButton(
+															tooltip: 'Hapus catatan',
+															icon: const Icon(Icons.delete_outline),
+															onPressed: () => ref
+																.read(notesProvider.notifier)
+																.deleteNote(note.id!),
+														),
+													),
+													);
+											},
 										),
 									),
-								);
-							},
-						),
-					);
+								),
+							],
+						);
 				},
 			),
 			floatingActionButton: FloatingActionButton.extended(

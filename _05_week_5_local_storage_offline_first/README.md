@@ -31,6 +31,16 @@ Halaman Settings menampilkan toggle Mode Gelap dan waktu terakhir aplikasi dibuk
 
 Halaman di atas menampilkan hasil Praktikum 2 berupa aplikasi catatan offline dengan penyimpanan SQLite.
 
-# Praktikum 3 SQLite dan Repository Catatan
+# Praktikum 3 Cache-first dan Antrean Sync
 
 ## Hasil Praktikum
+1. Catatan tersimpan secara lokal dan masih menunggu sinkronisasi. Ikon `cloud_off` menunjukkan catatan berstatus `dirty`, sedangkan banner menunjukkan jumlah antrean sync.
+![alt text](<screanshoot/prak3 sebelum tersimpan sync.png>)<br>
+2. Setelah tombol **SYNC** ditekan, antrean diproses dan status catatan berubah menjadi tersinkron. Ikon berubah menjadi `cloud_done` dan banner antrean hilang.
+![alt text](<screanshoot/prak3 setelah di sync.png>)
+
+Alur cache-first membaca catatan dari SQLite lokal terlebih dahulu, sehingga data tetap dapat ditampilkan secara offline. Perubahan baru diberi status `dirty` dan dimasukkan ke antrean, kemudian tombol **SYNC** memproses antrean tersebut.
+
+# AI Challenge
+
+## Hasil AI

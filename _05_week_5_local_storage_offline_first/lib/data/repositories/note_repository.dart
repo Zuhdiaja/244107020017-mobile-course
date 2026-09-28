@@ -1,4 +1,5 @@
 import 'package:sqflite/sqflite.dart';
+
 import '../local/db.dart';
 import '../local/note.dart';
 
@@ -42,6 +43,12 @@ class NoteRepository {
     final rows = await db.rawQuery(
         'SELECT COUNT(*) AS c FROM notes WHERE dirty = 1');
     return ((rows.first['c'] as num?)?.toInt() ?? 0);
+  }
+
+  Future<int> syncPending() async {
+    final pending = await countDirty();
+    await markAllSynced();
+    return pending;
   }
 
   Future<void> markAllSynced() async {
