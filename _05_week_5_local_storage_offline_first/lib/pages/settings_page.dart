@@ -47,6 +47,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
   @override
   Widget build(BuildContext context) {
     final darkMode = ref.watch(darkModeProvider);
+    final lastOpened = ref.watch(lastOpenedProvider);
 
     return Scaffold(
       appBar: AppBar(
@@ -60,6 +61,16 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
             onChanged: darkMode.isLoading
                 ? null
                 : (_) => ref.read(darkModeProvider.notifier).toggle(),
+          ),
+          const Divider(),
+          ListTile(
+            leading: const Icon(Icons.access_time),
+            title: const Text('Terakhir dibuka'),
+            subtitle: lastOpened.when(
+              data: (value) => Text(value ?? 'Belum ada data'),
+              loading: () => const Text('Memuat...'),
+              error: (_, _) => const Text('Gagal membaca data'),
+            ),
           ),
         ],
       ),
