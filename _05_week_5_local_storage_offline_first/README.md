@@ -44,3 +44,4 @@ Alur cache-first membaca catatan dari SQLite lokal terlebih dahulu, sehingga dat
 # AI Challenge
 
 ## Hasil AI
+Dokumentasi prompt AI, perbandingan SharedPreferences/Hive/sqflite/Drift, keputusan teknis, AI Verification Checklist, aturan konflik, dan hasil testing tersedia di [docs/ai-challenge.md](docs/ai-challenge.md).
