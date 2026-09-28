@@ -45,3 +45,22 @@ Alur cache-first membaca catatan dari SQLite lokal terlebih dahulu, sehingga dat
 
 ## Hasil AI
 Dokumentasi prompt AI, perbandingan SharedPreferences/Hive/sqflite/Drift, keputusan teknis, AI Verification Checklist, aturan konflik, dan hasil testing tersedia di [docs/ai-challenge.md](docs/ai-challenge.md).
+
+# Refactoring, testing, dan error umum
+
+## Hasil Refactoring dan Testing
+
+Refactoring dilakukan pada test agar sesuai dengan aplikasi Offline Notes dan tidak lagi menguji counter bawaan Flutter.
+
+- `note_test.dart` menguji parsing `Note`, serialisasi flag `dirty`, provider sukses dengan `FakeNoteRepository`, dan provider error.
+- `note_model_test.dart` menguji konversi model `Note` ke map SQLite dan sebaliknya.
+- `notes_provider_test.dart` menguji penambahan catatan melalui repository palsu tanpa database sungguhan.
+
+Hasil validasi:
+
+```text
+flutter analyze: No issues found!
+flutter test: 7 tests passed
+```
+
+#Tugas, refleksi, dan referensi
