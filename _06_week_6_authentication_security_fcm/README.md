@@ -1,5 +1,10 @@
 # Week 6: Authentication, Security & FCM
 
+Project Flutter untuk mempelajari autentikasi, penyimpanan token yang aman, dan
+Firebase Cloud Messaging (FCM). Fokus utama: login dengan penyimpanan token di
+secure storage, token refresh otomatis, serta penanganan notifikasi FCM pada
+tiga app state.
+
 ## Identitas
 
 | Keterangan | Detail |
@@ -8,9 +13,22 @@
 | NIM | 244107020017 |
 | Kelas | TI-3H |
 
+## Teknologi
+
+- Flutter
+- Flutter Riverpod
+- GoRouter
+- Dio
+- flutter_secure_storage
+- firebase_core, firebase_messaging
+- flutter_local_notifications
+
+---
+
 # Praktikum 1: Login, Secure Storage, dan Token Refresh
 
 ## Penyimpanan token yang aman
+
 ```dart
 class TokenStore {
   TokenStore({FlutterSecureStorage? storage})
@@ -46,8 +64,6 @@ class TokenStore {
 
 ### Halaman Login
 
-Form email dan kata sandi dengan validasi serta tombol **Masuk**.
-
 ![Halaman login](screanshoot/prak1-login.png)
 
 ### Validasi form
@@ -58,10 +74,6 @@ dikirim.
 ![Validasi form login](screanshoot/prak1-validasi.png)
 
 ### Halaman Beranda setelah login
-
-Login berhasil menyimpan token di secure storage, lalu pengguna diarahkan ke
-halaman Beranda. Tombol logout di kanan atas akan membersihkan token dan
-mengembalikan pengguna ke halaman Login.
 
 ![Halaman beranda](screanshoot/prak1-home.png)
 
@@ -85,7 +97,6 @@ void main() async {
   final dio = container.read(apiClientProvider);
   await initFcmToken(onToken: (token) async {
     // kirim token ke backend (POST /devices)
-    ...
   });
 
   runApp(...);
@@ -95,15 +106,9 @@ void main() async {
 ## Permission notifikasi
 
 Izin `POST_NOTIFICATIONS` ditambahkan di `AndroidManifest.xml`, lalu dialog
-runtime diminta lewat `requestPermission()`:
-
-```xml
-<uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
-```
+runtime diminta lewat `requestPermission()`.
 
 ## Token lifecycle
-
-`lib/messaging/push_service.dart`:
 
 ```dart
 Future<void> initFcmToken({required Future<void> Function(String token) onToken}) async {
@@ -124,9 +129,6 @@ Future<void> initFcmToken({required Future<void> Function(String token) onToken}
 
 ### Dialog izin notifikasi
 
-Saat aplikasi pertama kali dijalankan, dialog izin `POST_NOTIFICATIONS`
-muncul (Android 13+).
-
 ![Dialog izin notifikasi](screanshoot/prak2-permission.png)
 
 ### Token FCM tampil terpotong
@@ -135,23 +137,18 @@ muncul (Android 13+).
 
 ### Pengiriman token ke backend (POST /devices)
 
-Log terminal menunjukkan token yang didaftarkan. Pengiriman ke
-`example-campus-api.test` menghasilkan `connectionError` karena backend
-memang belum tersedia — hal ini didokumentasikan, sesuai codelab.
+Pengiriman ke `example-campus-api.test` menghasilkan `connectionError` karena
+backend memang belum tersedia — hal ini didokumentasikan, sesuai codelab.
 
 ![Log POST /devices](screanshoot/prak2-post-devices.png)
 
 ### Notifikasi tes dari Firebase Console
-
-dari Firebase Console (Messaging) saat aplikasi berada di state background; banner masuk ke notification tray.
 
 ![Notifikasi dari Console di tray](screanshoot/prak2-notif-console.png)
 
 ![Campaign di Firebase Console](screanshoot/prak2-console-campaign.png)
 
 ### Token refresh setelah clear data
-
-Setelah data aplikasi dihapus, FCM menerbitkan token baru dan `onTokenRefresh`/`getToken()` Perbandingan log:
 
 - token lama: `cB8ZfbSKQLmr...`
 - token baru: `f7ucvfOkReiJ...`
@@ -165,9 +162,6 @@ Setelah data aplikasi dihapus, FCM menerbitkan token baru dan `onTokenRefresh`/`
 # Praktikum 3: Tiga App State dan Deep Link
 
 ## Background handler (top-level)
-
-Handler background wajib berupa fungsi top-level karena berjalan di isolate
-terpisah, ditandai `@pragma('vm:entry-point')`:
 
 ```dart
 @pragma('vm:entry-point')
@@ -189,7 +183,7 @@ void listenForeground(void Function(String route) go) {
   // Foreground: sistem TIDAK menampilkan banner otomatis,
   // jadi tampilkan manual via local notification.
   FirebaseMessaging.onMessage.listen((message) async {
-    final route = message.data['route'] ?? '/';
+    final route = routeFromMessage(message.data);
     const androidDetails = AndroidNotificationDetails(
       'pengumuman', 'Pengumuman Kampus',
       importance: Importance.high, priority: Priority.high,
@@ -205,21 +199,18 @@ void listenForeground(void Function(String route) go) {
 
   // Background -> diklik.
   FirebaseMessaging.onMessageOpenedApp.listen((message) {
-    go(message.data['route'] ?? '/');
+    go(routeFromMessage(message.data));
   });
 }
 
 Future<void> handleTerminated(void Function(String route) go) async {
-  // Terminated -> dibuka dari notifikasi.
   final initial = await FirebaseMessaging.instance.getInitialMessage();
-  if (initial != null) go(initial.data['route'] ?? '/');
+  if (initial != null) go(routeFromMessage(initial.data));
   if (pendingDeepLink != null) go(pendingDeepLink!);
 }
 ```
 
 ## Payload uji (notification + data)
-
-Payload yang dikirim ke topik `pengumuman-kampus`:
 
 ```json
 {
@@ -244,12 +235,14 @@ await FirebaseMessaging.instance.subscribeToTopic('pengumuman-kampus');
 await FirebaseMessaging.instance.unsubscribeFromTopic('pengumuman-kampus');
 ```
 
+Aturan: topik untuk broadcast (semua mahasiswa / satu kelas), token perangkat
+untuk pesan personal (nilai, tagihan).
+
 ## Hasil Praktikum
 
 ### State Foreground
 
-Aplikasi terbuka. Sistem tidak menampilkan banner otomatis, sehingga banner
-ditampilkan manual lewat `flutter_local_notifications` pada `onMessage`.
+Banner ditampilkan manual lewat `flutter_local_notifications` pada `onMessage`.
 
 ![Banner foreground](screanshoot/prak3-fg-banner.png)
 
@@ -259,8 +252,7 @@ Klik banner menavigasi ke `data.route` (`/pengumuman/3`):
 
 ### State Background
 
-Aplikasi diminimize. Banner sistem muncul otomatis, lalu klik memicu
-`onMessageOpenedApp` untuk deep link.
+Banner sistem muncul otomatis, lalu klik memicu `onMessageOpenedApp`.
 
 ![Banner background](screanshoot/prak3-bg-banner.png)
 
@@ -268,15 +260,105 @@ Aplikasi diminimize. Banner sistem muncul otomatis, lalu klik memicu
 
 ### Log handler
 
-Log membuktikan payload `data.route` diterima dan deep link dieksekusi:
-
 ![Log handler FCM](screanshoot/prak3-log-handler.png)
 
 ### Tabel pengujian tiga app state
 
 | State | Yang diharapkan | Hasil |
 | --- | --- | --- |
-| Foreground | Banner lokal muncul, klik masuk `/pengumuman/3` | ✅ Berhasil |
-| Background | Banner sistem muncul, klik masuk `/pengumuman/3` | ✅ Berhasil |
+| Foreground | Banner lokal muncul, klik masuk `/pengumuman/3` | Berhasil |
+| Background | Banner sistem muncul, klik masuk `/pengumuman/3` | Berhasil |
+| Terminated | Aplikasi terbuka ke `/pengumuman/3` via `getInitialMessage` | Tidak teruji (batasan OEM) |
 
-> Catatan: pada perangkat OPPO/ColorOS, sistem membekukan aplikasi, sehingga notifikasi FCM tidak dikirimkan ke aplikasi dalam state terminated.
+> Catatan: pada perangkat OPPO/ColorOS, sistem membekukan aplikasi secara
+> agresif saat aplikasi ditutup, sehingga notifikasi FCM tidak dikirimkan ke
+> aplikasi dalam state terminated. Perilaku ini merupakan kebijakan manajemen
+> baterai OEM, bukan kesalahan kode.
+
+---
+
+# AI Challenge
+
+Dokumentasi prompt, output awal AI, daftar perbaikan manual, alasan teknis,
+dan tabel hasil uji tiga app state tersedia di
+[docs/ai-challenge.md](docs/ai-challenge.md).
+
+Ringkasan verifikasi draf AI:
+
+- Background handler berupa fungsi top-level dengan `@pragma('vm:entry-point')`.
+- `onTokenRefresh` benar-benar mengirim token baru ke backend (`POST /devices`),
+  bukan sekadar log.
+- Foreground memakai local notification manual (`onMessage` + `_local.show`).
+- Klik dari state foreground & background masuk ke `/pengumuman/3`.
+- Token tidak di-hardcode dan hanya ditampilkan terpotong.
+- Kredensial backend (`service-account.json`) tidak di-commit.
+
+---
+
+# Refactoring dan Testing
+
+Refactoring yang dilakukan:
+
+1. **Konstanta rute** dipusatkan di `lib/routes.dart` (`AppRoutes`) agar deep
+   link FCM dan GoRouter memakai sumber yang sama.
+2. **Parsing `RemoteMessage -> route`** diekstrak menjadi fungsi murni
+   `routeFromMessage(Map<String, dynamic> data)` sehingga dapat diunit-test
+   tanpa Firebase.
+3. **Pemetaan `DioException -> pesan ramah pengguna`** dipindah ke
+   `lib/data/api_errors.dart` (`friendlyErrorMessage`).
+
+Hasil validasi:
+
+```text
+flutter analyze : No issues found!
+flutter test    : 9 tests passed
+```
+---
+
+# Struktur Project
+
+```text
+lib/
+├── main.dart                     # init Firebase, guard route, deep link handler
+├── routes.dart                   # konstanta rute (Refactoring #1)
+├── data/
+│   ├── token_store.dart          # penyimpanan token di secure storage
+│   ├── auth_repository.dart      # mock login & refresh
+│   ├── api_client.dart           # Dio + interceptor refresh 401
+│   └── api_errors.dart           # pemetaan error ramah pengguna (Refactoring #3)
+├── messaging/
+│   └── push_service.dart         # permission, token lifecycle, 3 state, routeFromMessage
+├── providers/
+│   └── auth_provider.dart        # provider auth + token store + Dio
+└── pages/
+    ├── login_page.dart
+    ├── home_page.dart
+    └── announcement_page.dart    # target deep link /pengumuman/:id
+```
+
+---
+
+# Cara Menjalankan
+
+```bash
+flutter pub get
+flutter run
+```
+
+Memeriksa kualitas kode:
+
+```bash
+flutter analyze
+flutter test
+```
+
+> **Catatan (Windows):** bila path project mengandung spasi (mis.
+> `D:\Semester 5\...`), build APK dapat gagal pada proses native assets.
+> Jalankan dari drive virtual tanpa spasi:
+>
+> ```cmd
+> subst M: "D:\Semester 5\244107020017-mobile-course"
+> M:
+> cd \_06_week_6_authentication_security_fcm
+> flutter run
+> ```

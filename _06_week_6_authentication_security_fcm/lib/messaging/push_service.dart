@@ -4,6 +4,14 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
 final _local = FlutterLocalNotificationsPlugin();
 
+/// Parsing murni `data` payload FCM menjadi rute deep link.
+/// Dipisah agar bisa diunit-test tanpa Firebase (Refactoring Challenge #2).
+String routeFromMessage(Map<String, dynamic> data) {
+  final route = (data['route'] as String?) ?? '/';
+  if (route.isEmpty) return '/';
+  return route.startsWith('/') ? route : '/$route';
+}
+
 /// Payload deep link dari klik banner foreground (dibaca saat terminated).
 String? pendingDeepLink;
 
@@ -86,7 +94,7 @@ void listenForeground(void Function(String route) go) {
   // Foreground: sistem TIDAK menampilkan banner otomatis,
   // jadi tampilkan manual via local notification.
   FirebaseMessaging.onMessage.listen((message) async {
-    final route = message.data['route'] ?? '/';
+    final route = routeFromMessage(message.data);
     // Diagnostik: lihat isi data payload yang benar-benar diterima.
     debugPrint('[FCM foreground] data=${message.data} route=$route');
     const androidDetails = AndroidNotificationDetails(
@@ -108,13 +116,13 @@ void listenForeground(void Function(String route) go) {
   // Background -> diklik.
   FirebaseMessaging.onMessageOpenedApp.listen((message) {
     debugPrint('[FCM opened] data=${message.data}');
-    go(message.data['route'] ?? '/');
+    go(routeFromMessage(message.data));
   });
 }
 
 /// Terminated -> aplikasi dibuka dari notifikasi.
 Future<void> handleTerminated(void Function(String route) go) async {
   final initial = await FirebaseMessaging.instance.getInitialMessage();
-  if (initial != null) go(initial.data['route'] ?? '/');
+  if (initial != null) go(routeFromMessage(initial.data));
   if (pendingDeepLink != null) go(pendingDeepLink!);
 }

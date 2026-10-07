@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:go_router/go_router.dart';
 
+import 'data/api_errors.dart';
 import 'messaging/push_service.dart';
 import 'pages/announcement_page.dart';
 import 'pages/home_page.dart';
@@ -94,8 +95,7 @@ void main() async {
       // Backend memang belum ada (example-campus-api.test) -> error ini
       // DIHARAPKAN dan justru jadi bukti percobaan pengiriman.
       // ignore: avoid_print
-      print('Gagal kirim token ke backend: ${e.type} '
-          '${e.response?.statusCode ?? ''}');
+      print('Gagal kirim token ke backend: ${friendlyErrorMessage(e)}');
     } catch (e) {
       // ignore: avoid_print
       print('Gagal kirim token ke backend: $e');
