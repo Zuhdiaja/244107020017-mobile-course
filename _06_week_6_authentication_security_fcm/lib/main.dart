@@ -5,9 +5,11 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:go_router/go_router.dart';
 
 import 'messaging/push_service.dart';
+import 'pages/announcement_page.dart';
 import 'pages/home_page.dart';
 import 'pages/login_page.dart';
 import 'providers/auth_provider.dart';
+import 'routes.dart';
 
 /// Container global: dipakai router untuk membaca state auth di luar widget
 /// tree (pola `container.read(authStateProvider)` pada redirect GoRouter).
@@ -15,8 +17,15 @@ final container = ProviderContainer();
 
 final _appRouter = GoRouter(
   initialLocation: '/',
-  redirect: (context, state) {
-    final loggedIn = container.read(authStateProvider).value ?? false;
+  redirect: (context, state) async {
+    // Tunggu status auth selesai dibaca dari secure storage agar cold start
+    // tidak salah diarahkan ke /login saat provider masih loading.
+    bool loggedIn;
+    try {
+      loggedIn = await container.read(authStateProvider.future);
+    } catch (_) {
+      loggedIn = false;
+    }
     final goingLogin = state.matchedLocation == '/login';
     // Guard route: belum login selalu diarahkan ke /login.
     if (!loggedIn && !goingLogin) return '/login';
@@ -25,8 +34,13 @@ final _appRouter = GoRouter(
     return null;
   },
   routes: [
-    GoRoute(path: '/login', builder: (_, _) => const LoginPage()),
-    GoRoute(path: '/', builder: (_, _) => const HomePage()),
+    GoRoute(path: AppRoutes.login, builder: (_, _) => const LoginPage()),
+    GoRoute(path: AppRoutes.home, builder: (_, _) => const HomePage()),
+    GoRoute(
+      path: AppRoutes.announcementPattern,
+      builder: (_, state) =>
+          AnnouncementPage(id: state.pathParameters['id'] ?? ''),
+    ),
   ],
 );
 
@@ -51,6 +65,9 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   // Wajib sebelum runApp: inisialisasi Firebase
   await Firebase.initializeApp();
+
+  // Praktikum 3: handler background (top-level, isolate terpisah).
+  registerBackgroundHandler();
 
   // Praktikum 2: permission + notifikasi lokal + token lifecycle.
   await initLocalNotifications();
@@ -88,4 +105,11 @@ void main() async {
   runApp(
     UncontrolledProviderScope(container: container, child: const MyApp()),
   );
+
+  // Praktikum 3: state foreground + background (diklik) -> deep link.
+  listenForeground(_appRouter.go);
+  setDeepLinkNavigator(_appRouter.go);
+  // State terminated: tangani pesan yang membuka app dari notifikasi.
+  // Dipanggil setelah router siap (runApp di atas).
+  await handleTerminated(_appRouter.go);
 }

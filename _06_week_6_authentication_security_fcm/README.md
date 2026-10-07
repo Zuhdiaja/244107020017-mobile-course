@@ -160,3 +160,123 @@ Setelah data aplikasi dihapus, FCM menerbitkan token baru dan `onTokenRefresh`/`
 
 ![Token baru setelah clear data](screanshoot/prak2-token-baru.png)
 
+---
+
+# Praktikum 3: Tiga App State dan Deep Link
+
+## Background handler (top-level)
+
+Handler background wajib berupa fungsi top-level karena berjalan di isolate
+terpisah, ditandai `@pragma('vm:entry-point')`:
+
+```dart
+@pragma('vm:entry-point')
+Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+  // Jangan akses BuildContext / Riverpod di sini.
+  debugPrint('[FCM background] id=${message.messageId} '
+      'route=${message.data['route']}');
+}
+
+void registerBackgroundHandler() {
+  FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
+}
+```
+
+## Tiga handler app state
+
+```dart
+void listenForeground(void Function(String route) go) {
+  // Foreground: sistem TIDAK menampilkan banner otomatis,
+  // jadi tampilkan manual via local notification.
+  FirebaseMessaging.onMessage.listen((message) async {
+    final route = message.data['route'] ?? '/';
+    const androidDetails = AndroidNotificationDetails(
+      'pengumuman', 'Pengumuman Kampus',
+      importance: Importance.high, priority: Priority.high,
+    );
+    await _local.show(
+      id: message.hashCode,
+      title: message.notification?.title ?? 'Pengumuman',
+      body: message.notification?.body ?? '',
+      notificationDetails: const NotificationDetails(android: androidDetails),
+      payload: route,
+    );
+  });
+
+  // Background -> diklik.
+  FirebaseMessaging.onMessageOpenedApp.listen((message) {
+    go(message.data['route'] ?? '/');
+  });
+}
+
+Future<void> handleTerminated(void Function(String route) go) async {
+  // Terminated -> dibuka dari notifikasi.
+  final initial = await FirebaseMessaging.instance.getInitialMessage();
+  if (initial != null) go(initial.data['route'] ?? '/');
+  if (pendingDeepLink != null) go(pendingDeepLink!);
+}
+```
+
+## Payload uji (notification + data)
+
+Payload yang dikirim ke topik `pengumuman-kampus`:
+
+```json
+{
+  "message": {
+    "topic": "pengumuman-kampus",
+    "notification": {
+      "title": "Jadwal kuliah berubah",
+      "body": "Kelas Mobile pindah ke Ruang A2 jam 13.00"
+    },
+    "data": {
+      "route": "/pengumuman/3",
+      "id": "3"
+    }
+  }
+}
+```
+
+## Topic messaging
+
+```dart
+await FirebaseMessaging.instance.subscribeToTopic('pengumuman-kampus');
+await FirebaseMessaging.instance.unsubscribeFromTopic('pengumuman-kampus');
+```
+
+## Hasil Praktikum
+
+### State Foreground
+
+Aplikasi terbuka. Sistem tidak menampilkan banner otomatis, sehingga banner
+ditampilkan manual lewat `flutter_local_notifications` pada `onMessage`.
+
+![Banner foreground](screanshoot/prak3-fg-banner.png)
+
+Klik banner menavigasi ke `data.route` (`/pengumuman/3`):
+
+![Hasil klik foreground](screanshoot/prak3-fg-hasil.png)
+
+### State Background
+
+Aplikasi diminimize. Banner sistem muncul otomatis, lalu klik memicu
+`onMessageOpenedApp` untuk deep link.
+
+![Banner background](screanshoot/prak3-bg-banner.png)
+
+![Hasil klik background](screanshoot/prak3-bg-hasil.png)
+
+### Log handler
+
+Log membuktikan payload `data.route` diterima dan deep link dieksekusi:
+
+![Log handler FCM](screanshoot/prak3-log-handler.png)
+
+### Tabel pengujian tiga app state
+
+| State | Yang diharapkan | Hasil |
+| --- | --- | --- |
+| Foreground | Banner lokal muncul, klik masuk `/pengumuman/3` | ✅ Berhasil |
+| Background | Banner sistem muncul, klik masuk `/pengumuman/3` | ✅ Berhasil |
+
+> Catatan: pada perangkat OPPO/ColorOS, sistem membekukan aplikasi, sehingga notifikasi FCM tidak dikirimkan ke aplikasi dalam state terminated.
