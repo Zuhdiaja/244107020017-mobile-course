@@ -1,4 +1,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Izin notifikasi untuk Android 13+ (API 33+): dialog runtime
+         POST_NOTIFICATIONS muncul saat requestPermission() dipanggil. -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
     <application
         android:label="_06_week_6_authentication_security_fcm"
         android:name="${applicationName}"
