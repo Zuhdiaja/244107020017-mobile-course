@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../data/api_client.dart';
 import '../data/auth_repository.dart';
-import '../data/token_store.dart';
+import '../features/auth/data/datasources/token_store.dart';
 
 /// Sumber TokenStore tunggal — seluruh token hanya keluar-masuk lewat kelas ini.
 final tokenStoreProvider = Provider<TokenStore>((ref) => TokenStore());

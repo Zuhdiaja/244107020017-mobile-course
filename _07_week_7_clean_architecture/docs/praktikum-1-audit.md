@@ -3,37 +3,13 @@
 Dokumen ini adalah bukti (evidence) pelaksanaan Praktikum 1 codelab
 [#07 | Clean Architecture](https://jti-polinema.github.io/flutter-codelab/07-minggu-7-clean-architecture/).
 
-Tujuan tahap ini **hanya mengaudit**, belum mengubah kode. Refactor dilakukan
-pada Praktikum 2 dan 3.
-
-- Project asal: Minggu 6 `campus_notify` (auth + secure storage + FCM + deep link)
-- Folder kerja: `_07_week_7_clean_architecture/`
+- Project asal: Minggu 6 `campus_notify`
+- Folder : `_07_week_7_clean_architecture/`
 - Baseline: `flutter analyze` → `No issues found!`
 
 ---
 
 ## 1. Pemetaan file ke layer
-
-Struktur **sebelum** refactor (layer-first, belum ada pemisahan per fitur):
-
-```text
-lib/
-├── main.dart
-├── routes.dart
-├── data/
-│   ├── api_client.dart
-│   ├── api_errors.dart
-│   ├── auth_repository.dart
-│   └── token_store.dart
-├── messaging/
-│   └── push_service.dart
-├── pages/
-│   ├── announcement_page.dart
-│   ├── home_page.dart
-│   └── login_page.dart
-└── providers/
-    └── auth_provider.dart
-```
 
 | File | Layer saat ini | Masalah |
 | --- | --- | --- |
@@ -51,7 +27,7 @@ lib/
 
 ---
 
-## 2. Tiga pelanggaran klasik (hasil grep)
+## 2. Tiga pelanggaran (hasil grep)
 
 ### Pencarian 1 — widget menyentuh jaringan / database langsung
 
@@ -88,28 +64,7 @@ masih kelas konkret tanpa interface, sehingga belum bisa diganti fake saat test.
 
 ---
 
-## 3. Temuan tambahan (di luar pola grep codelab)
-
-Tiga pencarian resmi di atas **tidak menangkap** kebocoran berikut, karena
-halaman mengakses lewat provider/framework, bukan lewat package mentah:
-
-| Lokasi | Temuan | Jenis pelanggaran |
-| --- | --- | --- |
-| `lib/pages/home_page.dart:1` | `import 'package:firebase_messaging/firebase_messaging.dart';` | presentation → framework (Dependency Inversion) |
-| `lib/pages/home_page.dart:49` | `FirebaseMessaging.instance.getToken()` | presentation → framework |
-| `lib/pages/home_page.dart:34` | `ref.read(tokenStoreProvider)` | presentation → data (melewati domain) |
-| `lib/providers/auth_provider.dart:1` | `import 'package:dio/dio.dart';` | presentation → detail jaringan |
-| `lib/providers/auth_provider.dart:16` | `apiClientProvider` membangun `Dio` | presentation → konkret |
-| `lib/main.dart:87` | `dio.post('/devices', ...)` | composition root mengakses jaringan langsung |
-| `lib/data/api_client.dart:5` | parameter bertipe `AuthRepository` konkret | data → konkret, bukan abstraksi |
-| `lib/data/auth_repository.dart` | `AuthSession` + kontrak + implementasi satu file | entity & mapping tidak terpisah |
-
-Kesimpulan audit: **pelanggaran utama ada di presentation (`home_page.dart`,
-`auth_provider.dart`) dan pada pencampuran kontrak/implementasi repository.**
-
----
-
-## 4. Struktur target
+## 3. Struktur target
 
 Feature-first, satu fitur punya tiga layer. Fitur yang direfactor mengikuti
 fitur yang benar-benar ada di project (auth + deep link pengumuman + FCM):
@@ -139,16 +94,6 @@ lib/
 ├── routes.dart
 └── main.dart
 ```
-
-Arah dependensi yang harus dibuktikan:
-
-```text
-presentation ──> domain <── data
-     │                        │
-     └── tidak boleh ─────────┘
-         menyentuh Dio / SQLite / secure storage / Firebase
-```
-
 ---
 
 ## 5. Daftar item refactor (hasil audit)
