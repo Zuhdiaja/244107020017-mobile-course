@@ -99,8 +99,7 @@ Karena `rg` tidak tersedia di shell yang dipakai, ketiga perintah di atas
 dijalankan dengan `Select-String` pada pola yang sama persis, dengan cakupan
 folder yang sama. Hasilnya identik: nol untuk ketiganya.
 
-Dua temuan yang hilang setelah refactor, tercatat di
-[praktikum-1-audit.md](praktikum-1-audit.md):
+Dua temuan yang hilang setelah refactor:
 
 - `pages/home_page.dart` mengimpor `package:firebase_messaging` dan memanggil
   `FirebaseMessaging.instance.getToken()` langsung.

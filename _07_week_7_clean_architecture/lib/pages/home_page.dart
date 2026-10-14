@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../core/format.dart';
 import '../features/auth/presentation/providers/auth_providers.dart';
 import '../features/notifications/presentation/providers/notifications_providers.dart';
 
@@ -27,15 +28,11 @@ class HomePage extends ConsumerWidget {
     final loggedIn = authState.value ?? false;
     final colorScheme = Theme.of(context).colorScheme;
 
-    final maskedAccess = session == null
-        ? null
-        : '${session.access.substring(0, session.access.length.clamp(0, 12))}...';
+    final maskedAccess = maskSecret(session?.access);
     final hasRefresh = session != null && session.refresh.isNotEmpty;
 
     final token = fcmAsync.value;
-    final maskedFcmToken = token == null
-        ? null
-        : '${token.substring(0, token.length.clamp(0, 12))}...';
+    final maskedFcmToken = maskSecret(token);
 
     Future<void> logout() async {
       await ref.read(authStateProvider.notifier).logout();
@@ -104,7 +101,7 @@ class HomePage extends ConsumerWidget {
                     ],
                   ),
                   const SizedBox(height: 12),
-                  Text('access : ${maskedAccess ?? '-'}'),
+                  Text('access : $maskedAccess'),
                   Text('refresh: ${hasRefresh ? 'ada' : 'tidak ada'}'),
                   const SizedBox(height: 8),
                   Text(
@@ -144,7 +141,7 @@ class HomePage extends ConsumerWidget {
                   if (fcmAsync.hasError)
                     const Text('Gagal mengambil token FCM')
                   else
-                    Text('fcm : ${maskedFcmToken ?? 'mengambil...'}'),
+                    Text('fcm : ${maskedFcmToken == '-' ? 'mengambil...' : maskedFcmToken}'),
                   const SizedBox(height: 8),
                   Text(
                     'Registration token dari Firebase Cloud Messaging. '

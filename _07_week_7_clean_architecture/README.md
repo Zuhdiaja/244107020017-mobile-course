@@ -1,11 +1,12 @@
 # Week 7: Clean Architecture
 
-Refactor project Minggu 6 (`campus_notify`: auth + secure storage + FCM + deep
-link) menjadi struktur **feature-first Clean Architecture**.
+Refactor project Minggu 6 (`campus_notify`: auth + secure storage + FCM +
+deep link) menjadi struktur feature-first. Aplikasi tidak berubah
+perilaku, yang dipindah adalah strukturnya.
 
 ## Identitas
 
-| Keterangan | Detail |
+| | |
 | --- | --- |
 | Nama | Muhammad Zuhdi Yudadharma |
 | NIM | 244107020017 |
@@ -13,194 +14,54 @@ link) menjadi struktur **feature-first Clean Architecture**.
 
 ## Fitur utama
 
-Fitur yang direfactor adalah fitur yang **benar-benar ada** di aplikasi:
-
 | Fitur | Isi |
 | --- | --- |
 | `auth` | Login, sesi, penyimpanan access/refresh token di secure storage, logout, refresh token otomatis `401`. |
-| `announcements` | Halaman tujuan deep link `/pengumuman/:id` dari payload notifikasi. |
 | `notifications` | Permission, token lifecycle FCM, tiga app state (foreground, background, terminated), deep link. |
+| `announcements` | Halaman tujuan deep link `/pengumuman/:id` dari payload notifikasi. |
 
+## Stack
 
-# Praktikum 1: Audit layer project lama
+| | |
+| --- | --- |
+| Language | Dart 3.13.4 |
+| Framework | Flutter 3.47.5 |
+| State | Riverpod 3.4.3 |
+| Routing | GoRouter |
+| Jaringan | Dio |
+| Penyimpanan | flutter_secure_storage |
+| Notifikasi | firebase_messaging + flutter_local_notifications |
+| Backend | Firebase (email/password auth) |
 
-Audit dilakukan **sebelum** refactor. Bukti mentah (perintah `rg` beserta
-hasilnya) tersimpan di [docs/praktikum-1-audit.md](docs/praktikum-1-audit.md).
+## Cara menjalankan
 
-`flutter analyze` → `No issues found!`
-
-## Struktur sebelum refactor
-
-```text
-lib/
-├── main.dart
-├── routes.dart
-├── data/          # api_client, api_errors, auth_repository, token_store
-├── messaging/     # push_service
-├── pages/         # login_page, home_page, announcement_page
-└── providers/     # auth_provider
-```
-
-## 1. Pemetaan file ke layer
-
-| File | Layer saat ini | Masalah |
-| --- | --- | --- |
-| `pages/login_page.dart` | presentation | Tidak menyentuh jaringan. Namun menampilkan `state.error` mentah, belum `Failure` ramah pengguna. |
-| `pages/home_page.dart` | presentation| Impor `package:firebase_messaging` langsung, panggil `FirebaseMessaging.instance.getToken()`, dan baca secure storage lewat `ref.read(tokenStoreProvider)`. |
-| `pages/announcement_page.dart` | presentation |UI statis dari `id` link, tidak mengambil data. |
-| `providers/auth_provider.dart` | presentation (state) + DI tercampur | Impor `package:dio` dan membangun `Dio` (`apiClientProvider`) di  presentasi. |
-| `data/auth_repository.dart` | data | `AuthSession` + kontrak + implementasi mock dalam satu file; belum ada interface. |
-| `data/token_store.dart` | data | akses secure storage memang tugas data layer. |
-| `data/api_client.dart` | data | Lokasi aman, tetapi bergantung pada `AuthRepository` bukan abstraksi. |
-| `data/api_errors.dart` | data | Seharusnya menjadi `Failure` di `core/`, bukan detail Dio. |
-| `messaging/push_service.dart` | data | Mencampur Firebase + notifikasi lokal + navigasi UI (`_navigate`). |
-| `main.dart` | composition root | Melakukan `dio.post('/devices')` langsung di `main()`. |
-| `routes.dart` | core (routing) | konstanta rute sudah terpusat. |
-
-## 2. Tiga pelanggaran klasik
+Butuh Flutter SDK dan Android SDK. Device HP juga bisa dipakai langsung
+lewat USB debugging.
 
 ```bash
-# 1. Widget menyentuh jaringan / database langsung
-rg "Dio\(|http\.|openDatabase|SharedPreferences\.getInstance|FlutterSecureStorage" lib/pages lib/widgets
-# -> nol hasil
+flutter pub get
 
-# 2. Logika bisnis di dalam build()
-rg "DateFormat|jsonDecode|\.toIso8601String" lib/pages lib/widgets
-# -> nol hasil
+# isi credential Firebase dulu
+# android/app/google-services.json
+# service-account.json  (tidak di-commit, sudah masuk .gitignore)
 
-# 3. Instansiasi manual (DI bocor)
-rg "Repository\(|Dio\(BaseOptions" lib/pages lib/providers
-# -> 1 hasil: providers/auth_provider.dart:13 Provider<AuthRepository>((ref) => AuthRepository());
+flutter run
 ```
 
-Hasil pencarian ke-3 dinilai **wiring DI yang sah** (berada di composition root,
-bukan di widget).
+Untuk pengujian:
 
+```bash
+flutter analyze
+flutter test
+```
 
-### Struktur target project ini
+## Struktur
 
 ```text
 lib/
 ├── core/
-│   ├── failures.dart              # Failure domain (murni Dart)
-│   └── format.dart                # fungsi murni: parsing rute & format tanggal
-├── features/
-│   ├── auth/
-│   │   ├── domain/
-│   │   │   ├── entities/auth_session.dart
-│   │   │   ├── repositories/auth_repository.dart      # interface
-│   │   │   └── usecases/login.dart
-│   │   ├── data/
-│   │   │   ├── datasources/token_store.dart
-│   │   │   └── repositories/auth_repository_impl.dart
-│   │   └── presentation/
-│   │       ├── providers/auth_providers.dart          # DI + state
-│   │       └── pages/login_page.dart
-│   ├── announcements/
-│   │   └── presentation/pages/announcement_page.dart
-│   └── notifications/
-│       ├── data/push_service.dart
-│       └── presentation/providers/notifications_providers.dart
-├── routes.dart
-└── main.dart
-```
-
-### Urutan pengerjaan
-
-1. **`auth`** - dikerjakan lebih dulu dan paling lengkap, karena sudah punya
-   repository, token store, session, dan state login. Ini yang memenuhi syarat
-   "1 fitur penuh" (domain + data + presentation).
-2. **`announcements`** - cukup halaman dan provider, karena
-   `announcement_page.dart` masih UI statis dari `id` deep link. Tidak dibuat
-   repository/API palsu hanya demi struktur.
-3. **`notifications`** -   `push_service.dart` dipindahkan, dan logika navigasi
-   dikeluarkan darinya.
-
-## 4. Item refactor
-
-1. Pecah `data/auth_repository.dart` → entity `AuthSession` (domain), interface
-   `AuthRepository` (domain), `AuthRepositoryImpl` (data).
-2. Pindahkan `TokenStore` ke `features/auth/data/datasources/`.
-3. Buat `core/failures.dart`; ubah `api_errors.dart` menjadi pemetaan `Failure`.
-4. Pindahkan `push_service.dart` ke fitur `notifications`; keluarkan logika
-   navigasi darinya.
-5. Bersihkan `home_page.dart` dari import `firebase_messaging` dan akses
-   `tokenStoreProvider`.
-6. Pusatkan wiring DI di `auth_providers.dart`.
-7. Tambahkan use case `Login`.
-8. Ekstrak parsing rute dan format tanggal ke `core/format.dart`.
-
----
-
-## Bukti
-
-- Audit mentah: [docs/praktikum-1-audit.md](docs/praktikum-1-audit.md)
-- Screenshot kondisi awal: folder `screanshoot/`
-
----
-
-# Praktikum 2: Domain dan data per fitur
-
-## File yang dibuat
-
-```text
-lib/
-├── core/
-│   └── failures.dart                                    # BARU
-└── features/
-    └── auth/
-        ├── domain/
-        │   ├── entities/auth_session.dart               # BARU
-        │   ├── repositories/auth_repository.dart        # BARU (interface)
-        │   └── usecases/login.dart                      # BARU
-        └── data/
-            ├── models/auth_session_model.dart           # BARU
-            ├── datasources/token_store.dart             # PINDAH dari lib/data/
-            └── repositories/auth_repository_impl.dart   # BARU
-```
-
-## 1. Entity vs model
-
-| | `AuthSession` (entity) | `AuthSessionModel` (model) |
-| --- | --- | --- |
-| Layer | `domain` | `data` |
-| Isi | dua field bisnis | dua field + `fromJson`/`toJson`/`toEntity` |
-| Import | tidak ada | mengimpor entity |
-| Alasan berubah | aturan bisnis berubah | format data luar berubah |
-
-## 2. Use case dan justifikasinya
-
-`Login` **bukan** use case pass-through. Ia memegang aturan bisnis validasi
-format yang harus gagal cepat sebelum menyentuh repository:
-
-- email wajib mengandung `@`
-- kata sandi minimal 6 karakter
-
-`refresh` **tidak** dibuatkan use case karena hanya meneruskan panggilan ke
-repository dan tidak punya aturan bisnis sendiri, jadi cukup dipanggil
-langsung dari notifier.
-
-
-## Bukti
-
-- Audit mentah: [docs/praktikum-1-audit.md](docs/praktikum-1-audit.md)
-- Domain & data per fitur: [docs/praktikum-2-domain-data.md](docs/praktikum-2-domain-data.md)
-- Screenshot kondisi awal: folder `screanshoot/`
-
----
-
-# Praktikum 3: Presentation, DI, dan verifikasi
-
-Semua file dipindahkan ke tempatnya masing-masing, wiring provider dipusatkan
-di satu file, dan halaman dibersihkan dari akses data langsung. Setelah praktikum
-ini folder `lib/data`, `lib/providers`, dan `lib/messaging` sudah tidak ada.
-
-## Struktur akhir
-
-```text
-lib/
-├── core/
-│   └── failures.dart
+│   ├── failures.dart
+│   └── format.dart
 ├── features/
 │   ├── auth/
 │   │   ├── domain/
@@ -227,19 +88,119 @@ lib/
 └── main.dart
 ```
 
-File lama yang dihapus: `data/auth_repository.dart`, `data/api_client.dart`,
-`data/api_errors.dart`, `data/token_store.dart`, `providers/auth_provider.dart`,
-`pages/login_page.dart`, `pages/announcement_page.dart`,
-`messaging/push_service.dart`.
+## Arah dependensi
 
-## 1. Wiring DI dipusatkan di satu file
+```text
+presentation  ──►  domain  ◄──  data
+```
 
-Seluruh pendaftaran provider ada di
-`features/auth/presentation/providers/auth_providers.dart`, ditulis berurutan
-dari data ke presentation:
+Domain tidak mengimpor apa pun dari Flutter, Dio, atau Firebase, jadi
+logika bisnisnya bisa diuji tanpa device. Arah panah di atas bisa digambar
+tanpa membuka kode.
+
+`home_page.dart` tetap di `lib/pages/` karena isinya lintas fitur: status
+sesi dari `auth` dan token FCM dari `notifications`.
+
+---
+
+# Praktikum 1: Audit
+
+Sebelum refactor, tiap file dipetakan ke layer dan dicari tiga pelanggaran
+klasik.
+
+Struktur lama:
+
+```text
+lib/
+├── main.dart
+├── routes.dart
+├── data/          # api_client, api_errors, auth_repository, token_store
+├── messaging/     # push_service
+├── pages/         # login_page, home_page, announcement_page
+└── providers/     # auth_provider
+```
+
+Pemetaan file ke layer:
+
+| File | Layer | Masalah |
+| --- | --- | --- |
+| `pages/login_page.dart` | presentation | Menampilkan `state.error` mentah, belum pesan ramah |
+| `pages/home_page.dart` | presentation | Impor `firebase_messaging`, panggil `getToken()`, baca secure storage |
+| `pages/announcement_page.dart` | presentation | Tidak ambil data, tidak bermasalah |
+| `providers/auth_provider.dart` | presentation | Bangun `Dio` di lapisan presentasi |
+| `data/auth_repository.dart` | data | Entity, kontrak, dan implementasi dalam satu file |
+| `data/token_store.dart` | data | Akses secure storage memang tugas data layer |
+| `data/api_client.dart` | data | Bergantung pada `AuthRepository` konkret |
+| `data/api_errors.dart` | data | Berisi detail Dio, belum berupa `Failure` |
+| `messaging/push_service.dart` | data | Mencampur Firebase, notifikasi lokal, dan navigasi UI |
+| `main.dart` | composition root | `dio.post('/devices')` langsung di `main()` |
+| `routes.dart` | core | Sudah rapi |
+
+Tiga pencarian:
+
+```bash
+# 1
+rg "Dio\(|http\.|openDatabase|SharedPreferences\.getInstance|FlutterSecureStorage" lib/pages lib/widgets
+# -> nol hasil
+
+# 2
+rg "DateFormat|jsonDecode|\.toIso8601String" lib/pages lib/widgets
+# -> nol hasil
+
+# 3
+rg "Repository\(|Dio\(BaseOptions" lib/pages lib/providers
+# -> 1 hasil: providers/auth_provider.dart:13
+```
+
+Hasil ke-3 sebenarnya wiring DI yang sah karena ada di composition root,
+tapi baris itu membuktikan `AuthRepository` masih kelas konkret tanpa
+interface.
+
+Urutan pengerjaan: `auth` dulu karena paling lengkap dan punya semua lapis,
+lalu `announcements`, lalu `notifications`.
+
+# Praktikum 2: Domain dan data
+
+File yang dibuat:
+
+```text
+lib/core/failures.dart                                    # BARU
+
+lib/features/auth/
+├── domain/
+│   ├── entities/auth_session.dart                       # BARU
+│   ├── repositories/auth_repository.dart                # BARU (interface)
+│   └── usecases/login.dart                              # BARU
+└── data/
+    ├── models/auth_session_model.dart                   # BARU
+    ├── datasources/token_store.dart                     # PINDAH dari lib/data/
+    └── repositories/auth_repository_impl.dart           # BARU
+```
+
+Entity dan model dibedakan begini:
+
+| | `AuthSession` | `AuthSessionModel` |
+| --- | --- | --- |
+| Layer | `domain` | `data` |
+| Isi | dua field | dua field + mapping JSON |
+| Import | tidak ada | mengimpor entity |
+
+`Login` dibuat sebagai use case karena ia memegang aturan validasi format:
+email harus mengandung `@`, password minimal 6 karakter. Validasi begitu
+memang gagal sebelum repository dipanggil, jadi layak ada di domain.
+
+`refresh` tidak diberi use case. Panggilannya cuma meneruskan ke repository
+tanpa aturan sendiri, jadi dari notifier langsung ke repository sudah cukup.
+
+# Praktikum 3: Presentation dan DI
+
+Semua file sudah di tempatnya. `lib/data`, `lib/providers`, dan
+`lib/messaging` tidak ada lagi.
+
+Seluruh provider ada di satu file,
+`features/auth/presentation/providers/auth_providers.dart`:
 
 ```dart
-// Data layer — disuntikkan dari luar, widget tidak pernah membuat sendiri
 final tokenStoreProvider = Provider<TokenStore>((ref) => TokenStore());
 
 final authRepositoryProvider = Provider<AuthRepository>((ref) {
@@ -253,12 +214,10 @@ final apiClientProvider = Provider((ref) {
   );
 });
 
-// Domain layer — use case menerima interface, bukan implementasi
 final loginProvider = Provider<Login>((ref) {
   return Login(ref.watch(authRepositoryProvider));
 });
 
-// Presentation layer — state untuk UI
 final authStateProvider =
     AsyncNotifierProvider<AuthNotifier, bool>(AuthNotifier.new);
 
@@ -270,50 +229,78 @@ final sessionProvider = FutureProvider<AuthSession?>((ref) async {
 });
 ```
 
-Yang berubah dari sebelumnya, `authRepositoryProvider` sekarang mengembalikan
-interface `AuthRepository`, bukan kelas konkret. `AuthNotifier` juga sudah tidak
-membaca `TokenStore` sendiri — login lewat use case `Login`, logout lewat
-`repository.logout()`. Kontrak repository dapat diperluas dengan dua method
-baru, `currentSession()` dan `logout()`, supaya halaman tidak perlu membaca
-secure storage.
+`authRepositoryProvider` sekarang mengembalikan interface, bukan
+`AuthRepositoryImpl`. Kontraknya ditambah dua method, `currentSession()` dan
+`logout()`, supaya halaman dan notifier tidak perlu pegang secure storage.
 
-## 2. Halaman hanya membaca state
+`home_page.dart` dibersihkan dari dua temuan audit. Import
+`firebase_messaging` dan `FirebaseMessaging.instance.getToken()` diganti
+`ref.watch(fcmTokenProvider)`, dan `ref.read(tokenStoreProvider)` diganti
+`ref.watch(sessionProvider)`.
 
-Dua temuan Praktikum 1 di `home_page.dart` sudah dibersihkan:
+Dulu kedua nilai itu diambil sekali di `initState` lalu disimpan di state
+lokal. Sekarang dari provider, jadi ikut berubah sendiri begitu login atau
+logout. Tampilannya sama persis.
 
-- `import 'package:firebase_messaging'` dan `FirebaseMessaging.instance.getToken()`
-  diganti jadi `ref.watch(fcmTokenProvider)`. Pembacaan token FCM-nya pindah ke
-  `features/notifications/data/push_service.dart` lewat fungsi `getFcmToken()`.
+`login_page.dart` dan `announcement_page.dart` hanya pindah lokasi, isinya
+tidak disentuh.
 
-- `ref.read(tokenStoreProvider)` diganti jadi `ref.watch(sessionProvider)`.
-  Secure storage sekarang cuma diakses lewat `AuthRepository.currentSession()`.
+# Praktikum 4: Refactoring challenge dan testing
 
-Dulu kedua data itu diambil sekali di `initState` lalu disimpan ke state lokal.
-Sekarang diambil dari provider sehingga ikut berubah sendiri saat login atau
-logout. Tampilannya tetap sama: token 12 karakter pertama lalu titik-titik.
+Pengujian use case memakai `FakeAuthRepository`:
 
-`login_page.dart` pindah ke `features/auth/presentation/pages/` dan
-`announcement_page.dart` pindah ke
-`features/announcements/presentation/pages/`. Isi kedua halaman tidak berubah.
+```dart
+class FakeAuthRepository implements AuthRepository {
+  FakeAuthRepository({this.failWith});
 
-## 3. Kenapa home_page.dart masih di lib/pages/
+  final Failure? failWith;
+  String? lastEmail;
+  String? lastPassword;
+  int loginCalls = 0;
+  ...
+}
+```
 
-Halammenampilkan dua hal yang datang dari dua fitur berbeda: status
-sesi dari `auth` dan token FCM dari `notifications`. Kalau halaman ini dimasukkan
-ke fitur `auth`, berarti `an beranda auth` harus mengimpor presentation milik
-`notifications`. Codelab menulis fitur berkomunikasi lewat rute, bukan lewat
-import, dan halaman itu sendiri bukan widget milik satu fitur.
+`loginCalls` dipakai untuk memastikan validasi berhenti sebelum repository
+dipanggil:
 
-Karena itu home_page saya biarkan di `lib/pages/` sebagai halaman aplikasi.
-Isinya tetap bersih, dibuktikan pada grep berikut.
+```dart
+final result = await Login(repo)(email: 'budi', password: 'rahasia123');
 
-# 4. Static analysis dan test
-flutter analyze   # No issues found!
-flutter test      # 9 tests passed
+expect(result.failure, isA<ValidationFailure>());
+expect(repo.loginCalls, 0);
+```
 
-## Bukti
 
-- Audit mentah: [docs/praktikum-1-audit.md](docs/praktikum-1-audit.md)
-- Domain & data: [docs/praktikum-2-domain-data.md](docs/praktikum-2-domain-data.md)
-- AI Challenge: [docs/ai-challenge.md](docs/ai-challenge.md)
-- Screenshot kondisi awal: folder `screanshoot/`
+Lima kasus yang diuji:
+
+| Kasus | Yang dicek |
+| --- | --- |
+| input valid | sesi balik dari repository |
+| email tanpa `@` | `ValidationFailure`, repository tidak dipanggil |
+| password pendek | `ValidationFailure`, repository tidak dipanggil |
+| email berspasi | repository dapat email yang sudah dipangkas |
+| repository gagal | `AuthFailure` diteruskan, tidak melempar |
+
+
+File test dipecah per lapisan:
+
+```text
+test/
+├── format_test.dart        # fungsi core/format.dart (10 test)
+├── api_errors_test.dart    # pemetaan DioException -> Failure (7 test)
+└── login_usecase_test.dart # use case Login + fake (5 test)
+```
+
+# Hasil akhir
+
+```text
+flutter analyze            No issues found!
+flutter test               22 tests passed
+```
+
+# Dokumentasi
+
+- [docs/ai-challenge.md](docs/ai-challenge.md)
+- Screenshot: folder `screenshots/`
+  - `week7-after-clean-architecture.png` — beranda setelah refactor

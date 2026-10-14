@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:go_router/go_router.dart';
 
+import 'core/format.dart';
 import 'features/announcements/presentation/pages/announcement_page.dart';
 import 'features/auth/data/datasources/api_errors.dart';
 import 'features/auth/presentation/pages/login_page.dart';
@@ -80,8 +81,7 @@ void main() async {
   await initFcmToken(onToken: (token) async {
     // Token terpotong untuk bukti laporan (jangan token penuh).
     // ignore: avoid_print
-    print('Mendaftarkan device, token FCM: '
-        '${token.substring(0, token.length.clamp(0, 12))}...');
+    print('Mendaftarkan device, token FCM: ${maskSecret(token)}');
     try {
       // Kirim token ke backend (endpoint POST /devices).
       final res = await dio.post(
@@ -95,7 +95,7 @@ void main() async {
       // Backend memang belum ada (example-campus-api.test) -> error ini
       // DIHARAPKAN dan justru jadi bukti percobaan pengiriman.
       // ignore: avoid_print
-      print('Gagal kirim token ke backend: ${friendlyErrorMessage(e)}');
+      print('Gagal kirim token ke backend: ${mapDioException(e).message}');
     } catch (e) {
       // ignore: avoid_print
       print('Gagal kirim token ke backend: $e');

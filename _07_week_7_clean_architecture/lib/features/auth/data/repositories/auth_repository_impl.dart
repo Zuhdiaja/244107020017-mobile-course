@@ -1,6 +1,9 @@
+import 'package:dio/dio.dart';
+
 import '../../../../core/failures.dart';
 import '../../domain/entities/auth_session.dart';
 import '../../domain/repositories/auth_repository.dart';
+import '../datasources/api_errors.dart';
 import '../datasources/token_store.dart';
 import '../models/auth_session_model.dart';
 
@@ -24,10 +27,12 @@ class AuthRepositoryImpl implements AuthRepository {
       final session = AuthSessionModel.fromJson(json).toEntity();
       await _tokenStore.save(access: session.access, refresh: session.refresh);
       return (session: session, failure: null);
+    } on DioException catch (e) {
+      // Kegagalan jaringan dipetakan ke `Failure` di batas data. Presentation
+      // tidak pernah melihat `DioException`.
+      return (session: null, failure: mapDioException(e));
     } catch (e) {
-      // Saat Dio dipakai, tangkap DioException lebih dulu dan petakan ke
-      // NetworkFailure (lihat api_errors.dart). Sisa kegagalan di sini adalah
-      // kegagalan penyimpanan lokal.
+      // Sisanya adalah kegagalan penyimpanan lokal atau format respons.
       return (
         session: null,
         failure: LocalFailure('Gagal menyimpan sesi: $e'),

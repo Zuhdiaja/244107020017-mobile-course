@@ -2,15 +2,9 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
-final _local = FlutterLocalNotificationsPlugin();
+import '../../../core/format.dart';
 
-/// Parsing murni `data` payload FCM menjadi rute deep link.
-/// Dipisah agar bisa diunit-test tanpa Firebase (Refactoring Challenge #2).
-String routeFromMessage(Map<String, dynamic> data) {
-  final route = (data['route'] as String?) ?? '/';
-  if (route.isEmpty) return '/';
-  return route.startsWith('/') ? route : '/$route';
-}
+final _local = FlutterLocalNotificationsPlugin();
 
 /// Payload deep link dari klik banner foreground (dibaca saat terminated).
 String? pendingDeepLink;
