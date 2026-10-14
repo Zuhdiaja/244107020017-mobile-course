@@ -310,3 +310,10 @@ Isinya tetap bersih, dibuktikan pada grep berikut.
 # 4. Static analysis dan test
 flutter analyze   # No issues found!
 flutter test      # 9 tests passed
+
+## Bukti
+
+- Audit mentah: [docs/praktikum-1-audit.md](docs/praktikum-1-audit.md)
+- Domain & data: [docs/praktikum-2-domain-data.md](docs/praktikum-2-domain-data.md)
+- AI Challenge: [docs/ai-challenge.md](docs/ai-challenge.md)
+- Screenshot kondisi awal: folder `screanshoot/`
