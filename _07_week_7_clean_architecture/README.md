@@ -156,7 +156,8 @@ presentation ──> domain <── data
 
 ---
 
-# Lampiran: dokumentasi fitur Minggu 6 (kondisi *before*)
+> **Kondisi *before*.** Bagian di bawah ini adalah dokumentasi project Minggu 6
+> sebelum refactor, dipertahankan sebagai pembanding.
 
 # Minggu 6 — Praktikum 1: Login, Secure Storage, dan Token Refresh
 
