@@ -1,8 +1,8 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:week7_clean_architecture/data/api_errors.dart';
-import 'package:week7_clean_architecture/messaging/push_service.dart';
+import 'package:week7_clean_architecture/features/auth/data/datasources/api_errors.dart';
+import 'package:week7_clean_architecture/features/notifications/data/push_service.dart';
 import 'package:week7_clean_architecture/routes.dart';
 
 void main() {

@@ -59,6 +59,36 @@ class AuthRepositoryImpl implements AuthRepository {
     }
   }
 
+  @override
+  Future<({AuthSession? session, Failure? failure})> currentSession() async {
+    try {
+      final access = await _tokenStore.readAccess();
+      final refresh = await _tokenStore.readRefresh();
+      if (access == null || access.isEmpty) {
+        return (session: null, failure: null);
+      }
+      return (
+        session: AuthSession(access: access, refresh: refresh ?? ''),
+        failure: null,
+      );
+    } catch (e) {
+      return (
+        session: null,
+        failure: LocalFailure('Gagal membaca sesi: $e'),
+      );
+    }
+  }
+
+  @override
+  Future<Failure?> logout() async {
+    try {
+      await _tokenStore.clear();
+      return null;
+    } catch (e) {
+      return LocalFailure('Gagal keluar: $e');
+    }
+  }
+
   /// Mock "request" ke backend auth. Mengembalikan Map yang menyerupai
   /// respons JSON, sehingga jalur mapping `AuthSessionModel.fromJson` benar
   /// benar terpakai.

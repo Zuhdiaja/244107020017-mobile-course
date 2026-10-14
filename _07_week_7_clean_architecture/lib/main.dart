@@ -4,12 +4,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:go_router/go_router.dart';
 
-import 'data/api_errors.dart';
-import 'messaging/push_service.dart';
-import 'pages/announcement_page.dart';
+import 'features/announcements/presentation/pages/announcement_page.dart';
+import 'features/auth/data/datasources/api_errors.dart';
+import 'features/auth/presentation/pages/login_page.dart';
+import 'features/auth/presentation/providers/auth_providers.dart';
+import 'features/notifications/data/push_service.dart';
 import 'pages/home_page.dart';
-import 'pages/login_page.dart';
-import 'providers/auth_provider.dart';
 import 'routes.dart';
 
 /// Container global: dipakai router untuk membaca state auth di luar widget

@@ -18,4 +18,13 @@ abstract class AuthRepository {
 
   /// Tukar refresh token menjadi access token baru.
   Future<({String? access, Failure? failure})> refresh(String refreshToken);
+
+  /// Baca sesi yang tersimpan di penyimpanan aman.
+  ///
+  /// Diganti agar halaman cukup memanggil provider, bukan membaca
+  /// secure storage langsung.
+  Future<({AuthSession? session, Failure? failure})> currentSession();
+
+  /// Hapus sesi dari penyimpanan aman.
+  Future<Failure?> logout();
 }

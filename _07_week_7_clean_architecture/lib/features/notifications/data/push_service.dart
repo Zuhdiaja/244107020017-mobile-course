@@ -52,6 +52,9 @@ Future<void> initLocalNotifications() async {
   );
 }
 
+/// Ambil registration token FCM. Dipanggil provider, bukan dari widget.
+Future<String?> getFcmToken() => FirebaseMessaging.instance.getToken();
+
 Future<void> initFcmToken({
   required Future<void> Function(String token) onToken,
 }) async {
