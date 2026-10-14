@@ -298,8 +298,6 @@ flutter test    : 9 tests passed
 ## Bukti
 
 - Audit mentah: [docs/praktikum-1-audit.md](docs/praktikum-1-audit.md)
-- AI Challenge Minggu 6 (sebagai referensi cara menilai usulan AI):
-  [docs/ai-challenge.md](docs/ai-challenge.md)
 - Screenshot kondisi awal: folder `screanshoot/`
 
 > Catatan: folder screenshot masih bernama `screanshoot/` (bawaan project
