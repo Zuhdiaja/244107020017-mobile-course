@@ -46,3 +46,7 @@ app.*.map.json
 
 # Widget Preview related
 .widget_preview/
+
+# Kredensial Firebase (jangan di-commit)
+service-account.json
+
