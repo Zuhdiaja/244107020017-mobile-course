@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "205882060870",
+    "project_id": "campus-notify-zuhdi",
+    "storage_bucket": "campus-notify-zuhdi.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:205882060870:android:dd61b395a60ec2f6445a47",
+        "android_client_info": {
+          "package_name": "com.example.u_06_week_6_authentication_security_fcm"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB7ZUaU3x1PQK3tURcxED_YuvPUSw6oqgg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
