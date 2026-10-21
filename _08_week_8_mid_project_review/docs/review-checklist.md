@@ -133,18 +133,89 @@ Keputusan atas 5 temuan review:
 | 2 | Pesan error menampilkan prefix `Exception:` | Ditunda | Menyentuh kontrak `AuthNotifier` + `sessionProvider`, di luar tujuan PR → backlog A |
 | 3 | `Padding(24)` ganda pada form login | Ditunda | Kosmetik layout, tidak mengubah perilaku validasi → backlog B |
 | 4 | Composition root (`data/`) ada di presentation | Ditunda | Perlu memindahkan `tokenStore`/`apiClient`/`pushService`, PR akan melewati 300 baris → backlog C |
-| 5 | Kasus tepi `budi@` belum diuji + fake duplikat | Diterima sebagian | Test `budi@` masuk backlog D; duplikasi fake dan `context.go('/')` masuk backlog E (lihat `peer-review.md` §6) |
+| 5 | Kasus tepi `budi@` belum diuji + fake duplikat | Diterima sebagian | Backlog D: putuskan aturan kasus tepi + tambah test. Backlog E: pindahkan fake ke `test/helpers/`, pakai `AppRoutes.home` |
 
 ---
 
-## 5. Kesiapan tengah semester (diisi pada Praktikum 3)
+## 5. Praktikum 3 — Static analysis, CI, dan kesiapan tengah semester
+
+### 5.1 Tiga pemeriksaan mesin
+
+Dijalankan di `_07_week_7_clean_architecture` pada branch `chore/week8-ci`:
+
+```text
+flutter analyze
+  -> No issues found! (ran in 2.3s)
+
+dart format --set-exit-if-changed lib test
+  -> Formatted 22 files (0 changed), exit 0
+
+flutter test
+  -> 00:02 +28: All tests passed!
+```
+
+Perbaikan yang diperlukan agar ketiganya hijau:
+
+| Gejala | Penyebab | Solusi |
+| --- | --- | --- |
+| 12 file berubah saat `dart format --set-exit-if-changed` | Kode Minggu 5–7 ditulis sebelum ada cek format di PR | `dart format lib test` sekali, lalu dijaga oleh CI |
+| `curly_braces_in_flow_control_structures` di `api_client.dart:24` | Formatter memecah `if` satu baris, sementara lint mewajibkan blok | Tambahkan `{ }` pada `if (renewed.access == null)` |
+| `dart format .` gagal `PathNotFoundException` | Formatter ikut menyisir `build/` yang path-nya > 260 karakter | Batasi cakupan: `dart format lib test` (dipakai juga di CI) |
+
+### 5.2 CI menolak PR kotor
+
+File: [`.github/workflows/ci.yml`](../../.github/workflows/ci.yml)
+
+```yaml
+on:
+  pull_request:
+    branches: [develop, main]
+  push:
+    branches: [develop]
+defaults:
+  run:
+    working-directory: _07_week_7_clean_architecture
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - actions/checkout@v4
+      - subosito/flutter-action@v2 (3.47.5, stable, cache)
+      - flutter pub get
+      - flutter analyze
+      - dart format --set-exit-if-changed lib test
+      - flutter test
+```
+
+`working-directory` wajib diisi karena Flutter project berada di subfolder
+`_07_week_7_clean_architecture`, bukan di root repository.
+
+### 5.3 Tiga grep sterilitas (dijalankan ulang, bukan disalin)
+
+```text
+1. Presentation steril dari data mentah   -> 0 hasil
+   (Dio(|openDatabase|getDatabasesPath|FlutterSecureStorage|
+    SharedPreferences.getInstance|jsonDecode) pada lib/features/*/presentation, lib/pages)
+2. Domain & core steril dari framework    -> 0 hasil
+   (import package:flutter|dio|sqflite|firebase pada lib/features/*/domain, lib/core)
+3. Widget tidak instansiasi repository    -> 0 hasil
+   (Repository(|Dio(BaseOptions pada lib/pages)
+```
+
+### 5.4 Penilaian kesiapan
 
 | Butir | Status | Bukti |
 | --- | --- | --- |
-| Struktur feature-first terbukti (tiga grep sterilitas Minggu 7) | _menyusul_ | `_07_week_7_clean_architecture/docs/ai-challenge.md` |
-| `flutter analyze` bersih | _menyusul_ | output analyze |
-| `dart format` rapi | _menyusul_ | output format |
-| `flutter test` hijau | _menyusul_ | output test |
-| PR kecil + commit jelas | _menyusul_ | tautan PR |
-| README + screenshot + cara menjalankan | _menyusul_ | README Minggu 8 |
-| Semua komentar review ditindaklanjuti | _menyusul_ | thread PR |
+| Struktur feature-first terbukti (tiga grep sterilitas) | ✅ | §5.3 — ketiganya 0 hasil |
+| `flutter analyze` bersih | ✅ | `No issues found!` |
+| `dart format` rapi | ✅ | `Formatted 22 files (0 changed)` |
+| `flutter test` hijau | ✅ | 28 test |
+| PR kecil + commit jelas | ✅ | [#2](https://github.com/Zuhdiaja/244107020017-mobile-course/pull/2) — 4 file, 3 commit konvensional |
+| README + screenshot + cara menjalankan | ⏳ | lihat [`../README.md`](../README.md) |
+| Semua komentar review ditindaklanjuti | ✅ | 1 diterima & dikerjakan, 3 ditunda dengan alasan, 1 diterima sebagian |
+| CI menolak PR kotor | ⏳ | `.github/workflows/ci.yml` — status hijau terlihat setelah PR pertama |
+
+**Definisi selesai mid review:** aplikasi berjalan identik dengan akhir Minggu 7,
+tiga pemeriksaan mesin hijau, minimal 1 PR kecil per pasangan sudah di-merge
+via review, dan README memuat status paruh semester + peta issue/PR.
+Ketiganya sudah terpenuhi kecuali README (dikerjakan di §6).
