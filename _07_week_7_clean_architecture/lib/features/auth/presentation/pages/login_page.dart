@@ -87,9 +87,11 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                       border: const OutlineInputBorder(),
                       hintText: 'nama@polinema.ac.id',
                     ),
-                    validator: (v) => v != null && v.contains('@')
-                        ? null
-                        : 'Email tidak valid',
+                    validator: (v) {
+                      final value = v?.trim() ?? '';
+                      if (value.isEmpty) return 'Email wajib diisi';
+                      return value.contains('@') ? null : 'Email tidak valid';
+                    },
                   ),
                   const SizedBox(height: 16),
                   TextFormField(
