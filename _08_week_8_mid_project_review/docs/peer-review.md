@@ -82,9 +82,9 @@ penyebab ditunjuk di baris kode tertentu, lalu ditutup oleh PR yang tepat.
 | # | Keputusan | Alasan teknis | Tindakan |
 | --- | --- | --- | --- |
 | 1 | **Diterima** | Klaim di dokumen harus bisa direproduksi persis oleh reviewer. Yang benar-benar bersih hanya 4 file milik PR ini; 12 file lain adalah sisa Minggu 7 yang belum diformat dan sengaja tidak dimasukkan agar PR tetap < 300 baris. | Body PR diperbaiki: perintah `dart format` ditulis eksplisit untuk 4 file PR, ditambah catatan bahwa 12 file sisa dikerjakan di Praktikum 3 |
-| 2 | **Ditunda** | Perbaikannya menyentuh kontrak `AuthNotifier.login` dan `sessionProvider`, yaitu 2 provider yang dipakai `home_page.dart`. Perubahan itu bukan bagian dari tujuan PR (validasi email) dan akan menambah luas PR melewati satu tujuan. | Backlog **A** (bagian 6) |
-| 3 | **Ditunda** | Murni kosmetik layout, tidak mengubah perilaku validasi. | Backlog **B** (bagian 6) |
-| 4 | **Ditunda, sebagian ditolak** | Menempatkan `authRepositoryProvider` di presentation memang kompromi yang sudah ada sejak Minggu 7, tetapi memindahkannya sekarang berarti memindahkan seluruh composition root (`tokenStore`, `apiClient`, `pushService`) — perubahan besar yang tidak berhubungan dengan validasi email. | Backlog **C** (bagian 6) |
+| 2 | **Ditunda** | Perbaikannya menyentuh kontrak `AuthNotifier.login` dan `sessionProvider`, yaitu 2 provider yang dipakai `home_page.dart`. Perubahan itu bukan bagian dari tujuan PR (validasi email) dan akan menambah luas PR melewati satu tujuan. | Backlog **A**: teruskan `Failure` dan tampilkan `failure.message` |
+| 3 | **Ditunda** | Murni kosmetik layout, tidak mengubah perilaku validasi. | Backlog **B**: hapus satu `Padding(24)` pada form login |
+| 4 | **Ditunda, sebagian ditolak** | Menempatkan `authRepositoryProvider` di presentation memang kompromi yang sudah ada sejak Minggu 7, tetapi memindahkannya sekarang berarti memindahkan seluruh composition root (`tokenStore`, `apiClient`, `pushService`) - perubahan besar yang tidak berhubungan dengan validasi email. | Backlog **C**: pindahkan composition root ke `lib/core/di.dart` |
 | 5 | **Diterima sebagian** | Test `budi@` memang belum ada dan perilakunya saat ini lolos validasi — ini celah nyata. Duplikasi fake repository dan `context.go('/')` hardcoded adalah kerapian, bukan kebenaran. | Test `budi@` masuk backlog **D**; duplikasi fake + `context.go('/')` masuk backlog **E** |
 
 Prinsip yang dipegang: PR ini **satu tujuan** (pesan validasi email kosong).
