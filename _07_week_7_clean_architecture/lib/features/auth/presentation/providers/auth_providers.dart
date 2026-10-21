@@ -43,8 +43,9 @@ final loginProvider = Provider<Login>((ref) {
 // ---------------------------------------------------------------------------
 
 /// Status login: true bila access token tersedia di secure storage.
-final authStateProvider =
-    AsyncNotifierProvider<AuthNotifier, bool>(AuthNotifier.new);
+final authStateProvider = AsyncNotifierProvider<AuthNotifier, bool>(
+  AuthNotifier.new,
+);
 
 /// Sesi tersimpan, dipakai halaman untuk menampilkan token terpotong.
 ///
@@ -67,8 +68,10 @@ class AuthNotifier extends AsyncNotifier<bool> {
   Future<void> login(String email, String password) async {
     state = const AsyncLoading();
     state = await AsyncValue.guard(() async {
-      final result =
-          await ref.read(loginProvider)(email: email, password: password);
+      final result = await ref.read(loginProvider)(
+        email: email,
+        password: password,
+      );
       if (result.failure != null) {
         throw Exception(result.failure!.message);
       }

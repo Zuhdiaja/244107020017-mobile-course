@@ -96,8 +96,10 @@ class HomePage extends ConsumerWidget {
                     children: [
                       Icon(Icons.key, size: 18, color: colorScheme.primary),
                       const SizedBox(width: 8),
-                      Text('Token sesi (terpotong)',
-                          style: Theme.of(context).textTheme.titleSmall),
+                      Text(
+                        'Token sesi (terpotong)',
+                        style: Theme.of(context).textTheme.titleSmall,
+                      ),
                     ],
                   ),
                   const SizedBox(height: 12),
@@ -130,18 +132,25 @@ class HomePage extends ConsumerWidget {
                 children: [
                   Row(
                     children: [
-                      Icon(Icons.cloud_outlined,
-                          size: 18, color: colorScheme.primary),
+                      Icon(
+                        Icons.cloud_outlined,
+                        size: 18,
+                        color: colorScheme.primary,
+                      ),
                       const SizedBox(width: 8),
-                      Text('Token FCM (terpotong)',
-                          style: Theme.of(context).textTheme.titleSmall),
+                      Text(
+                        'Token FCM (terpotong)',
+                        style: Theme.of(context).textTheme.titleSmall,
+                      ),
                     ],
                   ),
                   const SizedBox(height: 12),
                   if (fcmAsync.hasError)
                     const Text('Gagal mengambil token FCM')
                   else
-                    Text('fcm : ${maskedFcmToken == '-' ? 'mengambil...' : maskedFcmToken}'),
+                    Text(
+                      'fcm : ${maskedFcmToken == '-' ? 'mengambil...' : maskedFcmToken}',
+                    ),
                   const SizedBox(height: 8),
                   Text(
                     'Registration token dari Firebase Cloud Messaging. '

@@ -8,10 +8,7 @@ import '../../domain/entities/auth_session.dart';
 /// Catatan: payload auth hanya berisi dua field, sehingga model ini minimal.
 /// Pola ini menjadi bernilai saat backend mengembalikan JSON yang lebih kaya.
 class AuthSessionModel extends AuthSession {
-  const AuthSessionModel({
-    required super.access,
-    required super.refresh,
-  });
+  const AuthSessionModel({required super.access, required super.refresh});
 
   factory AuthSessionModel.fromJson(Map<String, dynamic> json) {
     return AuthSessionModel(
@@ -21,9 +18,9 @@ class AuthSessionModel extends AuthSession {
   }
 
   Map<String, Object?> toJson() => {
-        'access_token': access,
-        'refresh_token': refresh,
-      };
+    'access_token': access,
+    'refresh_token': refresh,
+  };
 
   /// Konversi ke entity murni di batas data -> domain.
   AuthSession toEntity() => AuthSession(access: access, refresh: refresh);
