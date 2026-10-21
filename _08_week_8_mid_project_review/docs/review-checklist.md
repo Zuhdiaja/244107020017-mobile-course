@@ -32,7 +32,7 @@ git status
 | 3 | Sebagian pesan commit lama tidak menjelaskan isi perubahan | `praktikum 1 done`, `Praktikum 2 done`, `praktikum 3 done`, `all done dan rapikan readme`, `refactoring dan testing`, `ai challenge dan refactoring testing` | Sulit tahu perubahan apa yang bisa di-revert; tidak bisa dibaca dari `git log` | Ditulis ulang pada tabel bagian 2 |
 | 4 | Beberapa commit mencampur beberapa tujuan | `ba4382a ai challenge dan refactoring testing` menyentuh README, `api_errors.dart`, `push_service.dart`, `main.dart`, dan dua file test | Satu commit tidak bisa di-revert sebagian; review jadi lebih lambat | Dipecah per tujuan pada commit berikutnya |
 | 5 | `.vscode/` tidak terlacak dan tidak di-ignore | `git status` menampilkan `?? .vscode/` | Muncul sebagai noise di setiap `git status`; pengaturan editor bersama tidak ikut tersimpan | Di-commit sebagai `chore(vscode)` karena berisi pengaturan exclude folder hasil generate |
-| 6 | `dart format .` gagal di Windows | `PathNotFoundException` pada `build\firebase_messaging\...` (path > 260 karakter) | Format tidak bisa diverifikasi dengan perintah persis seperti codelab | Jalankan `dart format --set-exit-if-changed lib test`, dan pakai perintah itu di CI |
+| 6 | `dart format .` gagal di Windows | `PathNotFoundException` pada `build\firebase_messaging\...` (path > 260 karakter) | Format tidak bisa diverifikasi dengan perintah persis | Jalankan `dart format --set-exit-if-changed lib test`, dan pakai perintah itu di CI |
 
 Catatan lingkungan: `flutter test` gagal dengan `Building native assets failed`
 bila dijalankan dari path yang mengandung spasi (`D:\Semester 5\...`). Test
@@ -108,7 +108,36 @@ git push -u origin feat/email-validation
 
 ---
 
-## 4. Kesiapan tengah semester (diisi pada Praktikum 3)
+## 4. Praktikum 2 — Pull Request & review sejawat
+
+Rincian lengkap: [`peer-review.md`](peer-review.md).
+
+| Butir | Status | Bukti |
+| --- | --- | --- |
+| Issue dibuat sebelum PR | ✅ | [#1](https://github.com/Zuhdiaja/244107020017-mobile-course/issues/1) |
+| PR kecil satu fitur ke `develop` | ✅ | [#2](https://github.com/Zuhdiaja/244107020017-mobile-course/pull/2) — 4 file, +193/−18 |
+| Body PR memuat masalah, solusi, cara uji | ✅ | body PR #2 |
+| Issue ditutup otomatis via `Closes #1` | ✅ | Linked issues di sidebar PR #2 |
+| Review sejawat ≥ 3 komentar bermakna | ✅ | 5 temuan: 2 kebenaran, 1 arsitektur, 1 test, 1 keterbacaan |
+| Keputusan reviewer | ✅ Approve | catatan: temuan 2–5 menjadi issue lanjutan |
+| Review timbal balik untuk PR teman | ✅ | [oninonins/244107020122-mobile-course#3](https://github.com/oninonins/244107020122-mobile-course/pull/3) — saya approve, sudah merged |
+| Merge | ✅ | Squash and merge → `26f4e1f` di `develop` (22 Okt 2026 01:16 WIB) |
+| Issue tertutup otomatis | ✅ | issue #1 berstatus `closed / completed` pada detik yang sama |
+
+
+Keputusan atas 5 temuan review:
+
+| # | Temuan | Keputusan | Alasan |
+| --- | --- | --- | --- |
+| 1 | Klaim `dart format` tidak bisa direproduksi | Diterima | Body PR diperbaiki: perintah ditulis untuk 4 file PR, 12 file sisa dijadwalkan Praktikum 3 |
+| 2 | Pesan error menampilkan prefix `Exception:` | Ditunda | Menyentuh kontrak `AuthNotifier` + `sessionProvider`, di luar tujuan PR → backlog A |
+| 3 | `Padding(24)` ganda pada form login | Ditunda | Kosmetik layout, tidak mengubah perilaku validasi → backlog B |
+| 4 | Composition root (`data/`) ada di presentation | Ditunda | Perlu memindahkan `tokenStore`/`apiClient`/`pushService`, PR akan melewati 300 baris → backlog C |
+| 5 | Kasus tepi `budi@` belum diuji + fake duplikat | Diterima sebagian | Test `budi@` masuk backlog D; duplikasi fake dan `context.go('/')` masuk backlog E (lihat `peer-review.md` §6) |
+
+---
+
+## 5. Kesiapan tengah semester (diisi pada Praktikum 3)
 
 | Butir | Status | Bukti |
 | --- | --- | --- |
