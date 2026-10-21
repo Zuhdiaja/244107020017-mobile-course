@@ -108,7 +108,35 @@ git push -u origin feat/email-validation
 
 ---
 
-## 4. Kesiapan tengah semester (diisi pada Praktikum 3)
+## 4. Praktikum 2 — Pull Request & review sejawat
+
+Rincian lengkap: [`peer-review.md`](peer-review.md).
+
+| Butir | Status | Bukti |
+| --- | --- | --- |
+| Issue dibuat sebelum PR | ✅ | [#1](https://github.com/Zuhdiaja/244107020017-mobile-course/issues/1) |
+| PR kecil satu fitur ke `develop` | ✅ | [#2](https://github.com/Zuhdiaja/244107020017-mobile-course/pull/2) — 4 file, +193/−18 |
+| Body PR memuat masalah, solusi, cara uji | ✅ | body PR #2 |
+| Issue ditutup otomatis via `Closes #1` | ✅ | Linked issues di sidebar PR #2 |
+| Review sejawat ≥ 3 komentar bermakna | ✅ | 5 temuan: 2 kebenaran, 1 arsitektur, 1 test, 1 keterbacaan |
+| Keputusan reviewer | ✅ Approve | catatan: temuan 2–5 menjadi issue lanjutan |
+| Review timbal balik untuk PR teman | ✅ | [oninonins/244107020122-mobile-course#3](https://github.com/oninonins/244107020122-mobile-course/pull/3) — saya approve, sudah merged |
+| Merge | ⏳ | Squash merge setelah approve masuk |
+| Branch dihapus setelah merge | ⏳ | `git branch -d feat/email-validation` |
+
+Keputusan atas 5 temuan review:
+
+| # | Temuan | Keputusan | Alasan |
+| --- | --- | --- | --- |
+| 1 | Klaim `dart format` tidak bisa direproduksi | Diterima | Body PR diperbaiki: perintah ditulis untuk 4 file PR, 12 file sisa dijadwalkan Praktikum 3 |
+| 2 | Pesan error menampilkan prefix `Exception:` | Ditunda | Menyentuh kontrak `AuthNotifier` + `sessionProvider`, di luar tujuan PR |
+| 3 | `Padding(24)` ganda pada form login | Ditunda | Kosmetik layout, tidak mengubah perilaku validasi |
+| 4 | Composition root (`data/`) ada di presentation | Ditunda | Perlu memindahkan `tokenStore`/`apiClient`/`pushService`, PR akan melewati 300 baris |
+| 5 | Kasus tepi `budi@` belum diuji + fake duplikat | Diterima sebagian | Test `budi@` masuk PR lanjutan; duplikasi fake dan `context.go('/')` jadi satu issue kerapian |
+
+---
+
+## 5. Kesiapan tengah semester (diisi pada Praktikum 3)
 
 | Butir | Status | Bukti |
 | --- | --- | --- |
