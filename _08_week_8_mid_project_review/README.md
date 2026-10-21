@@ -33,8 +33,13 @@ kolaborasi Git, bukan menambah fitur baru. Aplikasi yang dinilai tetap
 | [#1](https://github.com/Zuhdiaja/244107020017-mobile-course/issues/1) | Issue | Validasi email kosong menampilkan pesan yang salah | closed / completed |
 | [#2](https://github.com/Zuhdiaja/244107020017-mobile-course/pull/2) | PR `feat/email-validation` → `develop` | feat(auth): pesan validasi email kosong + test | merged (`26f4e1f`), approve `oninonins` |
 | [#3](https://github.com/Zuhdiaja/244107020017-mobile-course/pull/3) | PR `docs/week8-praktikum2` → `develop` | docs(week8): laporan Praktikum 2 | merged (`4ba1c19`) |
-| — | PR `chore/week8-format` → `develop` | style: dart format seluruh lib dan test + blok pada if api_client | menunggu merge |
-| — | PR `ci/week8-pipeline` → `develop` | chore(week8): workflow CI, README paruh semester, hasil Praktikum 3 | menunggu merge |
+| [#5](https://github.com/Zuhdiaja/244107020017-mobile-course/pull/5) | PR `chore/week8-format` → `develop` | style: dart format seluruh lib dan test + blok pada if api_client | merged (`a8da40a`) |
+| [#4](https://github.com/Zuhdiaja/244107020017-mobile-course/pull/4) | PR `ci/week8-pipeline` → `develop` | chore(week8): workflow CI, README paruh semester, hasil Praktikum 3 | merged (`70e303d`) |
+
+PR #4 pertama kali merah di step `dart format` karena dicabangkan sebelum
+PR #5 masuk `develop` ([run berwarna](https://github.com/Zuhdiaja/244107020017-mobile-course/actions/runs/39656242167)).
+Setelah #5 di-merge dan branch disinkron (`47cc5dd`), run berikutnya hijau
+([bukti](https://github.com/Zuhdiaja/244107020017-mobile-course/actions/runs/39657414147)).
 
 Review timbal balik yang saya berikan:
 [oninonins/244107020122-mobile-course#3](https://github.com/oninonins/244107020122-mobile-course/pull/3)
@@ -101,10 +106,25 @@ satu PR satu tujuan dan < 300 baris.
 ## Hasil yang dicapai
 
 - 1 issue ditutup otomatis oleh PR (`Closes #1`).
-- 2 PR di-merge ke `develop` lewat review, masing-masing < 300 baris.
+- 4 PR di-merge ke `develop` (#2, #3, #5, #4), masing-masing < 300 baris.
+- 1 PR di-merahkan CI sebelum dibaca manusia (`dart format` gagal) — aturan "PR kotor ditolak mesin" terbukti bekerja, bukan cuma disetel.
 - 1 PR review timbal balik untuk repository teman.
 - `flutter analyze`, `dart format`, dan `flutter test` hijau, dijaga CI.
 - 12 file sisa Minggu 5–7 diformat; satu lint `curly_braces_in_flow_control_structures` muncul akibat formatter dan diperbaiki.
+
+## Bukti visual
+
+![CI hijau](screenshots/week8-ci-green.png)
+
+Run Actions `chore(week8): workflow CI, README paruh semester, hasil Praktikum 3` — job `analyze + format + test` Success (1m 57s, keras dari PR #4).
+
+![PR #2 approved dan merged](screenshots/week8-pr2-approved-merged.png)
+
+PR #2 dengan badge **Merged**, reviewer `oninonins` berstatus ✓, dan Development link ke issue #1.
+
+![Tiga cek mesin](screenshots/week8-analyze-format-test.png)
+
+Terminal: `No issues found!`, `22 files (0 changed)`, `28: All tests passed!`.
 
 ## Dokumentasi
 

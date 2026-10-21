@@ -211,9 +211,9 @@ jobs:
 | `dart format` rapi | ✅ | `Formatted 22 files (0 changed)` |
 | `flutter test` hijau | ✅ | 28 test |
 | PR kecil + commit jelas | ✅ | [#2](https://github.com/Zuhdiaja/244107020017-mobile-course/pull/2) — 4 file, 3 commit konvensional |
-| README + screenshot + cara menjalankan | ⏳ | lihat [`../README.md`](../README.md) |
+| README + screenshot + cara menjalankan | ✅ | [`../README.md`](../README.md) + bukti visual ada di [`../screenshots/`](../screenshots/) |
 | Semua komentar review ditindaklanjuti | ✅ | 1 diterima & dikerjakan, 3 ditunda dengan alasan, 1 diterima sebagian |
-| CI menolak PR kotor | ⏳ | `.github/workflows/ci.yml` — status hijau terlihat setelah PR pertama |
+| CI menolak PR kotor | ✅ | PR #4 gagal di step `dart format` ([run 39656242167](https://github.com/Zuhdiaja/244107020017-mobile-course/actions/runs/39656242167)), lalu hijau setelah sinkronisasi ([39657414147](https://github.com/Zuhdiaja/244107020017-mobile-course/actions/runs/39657414147)) |
 
 **Definisi selesai mid review:** aplikasi berjalan identik dengan akhir Minggu 7,
 tiga pemeriksaan mesin hijau, minimal 1 PR kecil per pasangan sudah di-merge
