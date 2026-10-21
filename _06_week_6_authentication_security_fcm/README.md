@@ -138,7 +138,7 @@ Future<void> initFcmToken({required Future<void> Function(String token) onToken}
 ### Pengiriman token ke backend (POST /devices)
 
 Pengiriman ke `example-campus-api.test` menghasilkan `connectionError` karena
-backend memang belum tersedia — hal ini didokumentasikan, sesuai codelab.
+backend memang belum tersedia — hal ini didokumentasikan, sesuai materi.
 
 ![Log POST /devices](screanshoot/prak2-post-devices.png)
 

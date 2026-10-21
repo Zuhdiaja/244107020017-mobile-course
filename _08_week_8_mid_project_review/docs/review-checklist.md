@@ -214,8 +214,25 @@ jobs:
 | README + screenshot + cara menjalankan | ✅ | [`../README.md`](../README.md) + bukti visual ada di [`../screenshots/`](../screenshots/) |
 | Semua komentar review ditindaklanjuti | ✅ | 1 diterima & dikerjakan, 3 ditunda dengan alasan, 1 diterima sebagian |
 | CI menolak PR kotor | ✅ | PR #4 gagal di step `dart format` ([run 39656242167](https://github.com/Zuhdiaja/244107020017-mobile-course/actions/runs/39656242167)), lalu hijau setelah sinkronisasi ([39657414147](https://github.com/Zuhdiaja/244107020017-mobile-course/actions/runs/39657414147)) |
+| Review AI diverifikasi, bukan ditempel | ✅ | [`ai-review-vs-keputusan.md`](ai-review-vs-keputusan.md) — 4 diterima, 1 diterima sebagian, 1 ditolak, 1 ditunda |
+
+### 5.5 Satu PR besar dipecah jadi dua
+
+Rencana awal Praktikum 3 menumpuk format 12 file, CI, README, dan laporan dalam
+satu branch. Perkiraan ukurannya ±470 baris — melanggar aturan < 300.
+
+Dipecah berdasarkan tujuan:
+
+| PR | Branch | Isi | Baris |
+| --- | --- | --- | --- |
+| [#5](https://github.com/Zuhdiaja/244107020017-mobile-course/pull/5) | `chore/week8-format` | hasil `dart format` + satu perbaikan lint | 194 |
+| [#4](https://github.com/Zuhdiaja/244107020017-mobile-course/pull/4) | `ci/week8-pipeline` | workflow CI, README, laporan Praktikum 3 | 276 |
+
+Konsekuensi yang harus diterima: PR #4 bergantung pada #5, jadi #5 harus
+di-merge lebih dulu. Itu terbukti dari run merah `39656242167`.
 
 **Definisi selesai mid review:** aplikasi berjalan identik dengan akhir Minggu 7,
 tiga pemeriksaan mesin hijau, minimal 1 PR kecil per pasangan sudah di-merge
-via review, dan README memuat status paruh semester + peta issue/PR.
-Ketiganya sudah terpenuhi kecuali README (dikerjakan di §6).
+via review, dan README memuat status paruh semester + peta issue/PR. Keempatnya
+terpenuhi: perilaku hanya berubah di pesan validasi email, §5.1 hijau, CI aktif
+(§5.2), dan PR #2 di-merge lewat review sejawat.

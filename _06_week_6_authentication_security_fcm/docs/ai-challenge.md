@@ -21,7 +21,7 @@ dan bagian yang tidak boleh mengakses BuildContext.
 
 ## Output awal AI
 
-AI menghasilkan draf service FCM dan boilerplate auth berdasarkan codelab.
+AI menghasilkan draf service FCM dan boilerplate auth berdasarkan materi.
 Beberapa bagian berupa potongan kode yang belum bisa langsung dijalankan:
 
 - `main.dart` masih berisi snippet `GoRouter(...)` tanpa `main()`,
@@ -69,7 +69,7 @@ Beberapa bagian berupa potongan kode yang belum bisa langsung dijalankan:
 1. **`routeFromMessage` dipisah sebagai fungsi murni** agar dapat diuji tanpa
    Firebase dan dipakai konsisten oleh ketiga handler.
 2. **`POST /devices` diarahkan ke `example-campus-api.test`** (server simulasi
-   codelab). `connectionError` diharapkan dan didokumentasikan; saat backend
+   materi). `connectionError` diharapkan dan didokumentasikan; saat backend
    kampus siap, cukup ganti `baseUrl`.
 3. **`friendlyErrorMessage`** memisahkan pemetaan error Dio dari UI, sehingga
    widget hanya menerima pesan siap tampil.
