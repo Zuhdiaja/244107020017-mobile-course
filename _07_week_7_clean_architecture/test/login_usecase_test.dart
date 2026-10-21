@@ -59,16 +59,21 @@ class FakeAuthRepository implements AuthRepository {
 
 void main() {
   group('Login (use case) dengan repository palsu', () {
-    test('input valid meneruskan ke repository dan mengembalikan sesi',
-        () async {
-      final repo = FakeAuthRepository();
-      final result = await Login(repo)(email: 'budi@polinema.ac.id', password: 'rahasia123');
+    test(
+      'input valid meneruskan ke repository dan mengembalikan sesi',
+      () async {
+        final repo = FakeAuthRepository();
+        final result = await Login(repo)(
+          email: 'budi@polinema.ac.id',
+          password: 'rahasia123',
+        );
 
-      expect(result.failure, isNull);
-      expect(result.session, isNotNull);
-      expect(result.session!.access, 'access-budi@polinema.ac.id');
-      expect(repo.loginCalls, 1);
-    });
+        expect(result.failure, isNull);
+        expect(result.session, isNotNull);
+        expect(result.session!.access, 'access-budi@polinema.ac.id');
+        expect(repo.loginCalls, 1);
+      },
+    );
 
     test('email tanpa "@" gagal tanpa menyentuh repository', () async {
       final repo = FakeAuthRepository();
@@ -81,9 +86,31 @@ void main() {
       expect(repo.loginCalls, 0);
     });
 
+    test('email kosong ditolak dengan pesan wajib diisi', () async {
+      final repo = FakeAuthRepository();
+      final result = await Login(repo)(email: '', password: 'rahasia123');
+
+      expect(result.session, isNull);
+      expect(result.failure, isA<ValidationFailure>());
+      expect(result.failure!.message, contains('wajib diisi'));
+      expect(repo.loginCalls, 0);
+    });
+
+    test('email berisi spasi saja dianggap kosong', () async {
+      final repo = FakeAuthRepository();
+      final result = await Login(repo)(email: '   ', password: 'rahasia123');
+
+      expect(result.failure, isA<ValidationFailure>());
+      expect(result.failure!.message, contains('wajib diisi'));
+      expect(repo.loginCalls, 0);
+    });
+
     test('password pendek gagal tanpa menyentuh repository', () async {
       final repo = FakeAuthRepository();
-      final result = await Login(repo)(email: 'budi@polinema.ac.id', password: '123');
+      final result = await Login(repo)(
+        email: 'budi@polinema.ac.id',
+        password: '123',
+      );
 
       expect(result.session, isNull);
       expect(result.failure, isA<ValidationFailure>());
@@ -93,15 +120,23 @@ void main() {
 
     test('email dipangkas spasi sebelum divalidasi', () async {
       final repo = FakeAuthRepository();
-      final result = await Login(repo)(email: '  budi@polinema.ac.id  ', password: 'rahasia123');
+      final result = await Login(repo)(
+        email: '  budi@polinema.ac.id  ',
+        password: 'rahasia123',
+      );
 
       expect(result.failure, isNull);
       expect(repo.lastEmail, 'budi@polinema.ac.id');
     });
 
     test('kegagalan dari repository diteruskan tanpa melempar', () async {
-      final repo = FakeAuthRepository(failWith: const AuthFailure('Sesi berakhir'));
-      final result = await Login(repo)(email: 'budi@polinema.ac.id', password: 'rahasia123');
+      final repo = FakeAuthRepository(
+        failWith: const AuthFailure('Sesi berakhir'),
+      );
+      final result = await Login(repo)(
+        email: 'budi@polinema.ac.id',
+        password: 'rahasia123',
+      );
 
       expect(result.session, isNull);
       expect(result.failure, isA<AuthFailure>());
