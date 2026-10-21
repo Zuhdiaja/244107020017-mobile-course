@@ -33,10 +33,7 @@ class AuthRepositoryImpl implements AuthRepository {
       return (session: null, failure: mapDioException(e));
     } catch (e) {
       // Sisanya adalah kegagalan penyimpanan lokal atau format respons.
-      return (
-        session: null,
-        failure: LocalFailure('Gagal menyimpan sesi: $e'),
-      );
+      return (session: null, failure: LocalFailure('Gagal menyimpan sesi: $e'));
     }
   }
 
@@ -77,10 +74,7 @@ class AuthRepositoryImpl implements AuthRepository {
         failure: null,
       );
     } catch (e) {
-      return (
-        session: null,
-        failure: LocalFailure('Gagal membaca sesi: $e'),
-      );
+      return (session: null, failure: LocalFailure('Gagal membaca sesi: $e'));
     }
   }
 

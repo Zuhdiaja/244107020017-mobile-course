@@ -77,8 +77,10 @@ Future<void> unsubscribeFromTopic() async {
 Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   // Jangan akses BuildContext / Riverpod di sini.
   // Tugasnya: catat / simpan ringan saja. Navigasi dilakukan saat klik.
-  debugPrint('[FCM background] id=${message.messageId} '
-      'route=${message.data['route']}');
+  debugPrint(
+    '[FCM background] id=${message.messageId} '
+    'route=${message.data['route']}',
+  );
 }
 
 void registerBackgroundHandler() {

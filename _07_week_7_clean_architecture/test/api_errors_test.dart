@@ -7,15 +7,14 @@ import 'package:week7_clean_architecture/features/auth/data/datasources/api_erro
 /// Refactoring Challenge #3: pemetaan error harus mengembalikan `Failure`,
 /// bukan `String`, supaya presentation tidak perlu memilih tabel pesan lagi.
 void main() {
-  DioException dioError(
-    DioExceptionType type, {
-    int? statusCode,
-  }) {
+  DioException dioError(DioExceptionType type, {int? statusCode}) {
     final request = RequestOptions(path: '/devices');
     return DioException(
       requestOptions: request,
       type: type,
-      response: statusCode == null ? null : Response(requestOptions: request, statusCode: statusCode),
+      response: statusCode == null
+          ? null
+          : Response(requestOptions: request, statusCode: statusCode),
     );
   }
 

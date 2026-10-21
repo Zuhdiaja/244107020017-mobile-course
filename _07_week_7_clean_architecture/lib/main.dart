@@ -54,10 +54,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp.router(
       title: 'Campus Notification App',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        colorSchemeSeed: Colors.indigo,
-        useMaterial3: true,
-      ),
+      theme: ThemeData(colorSchemeSeed: Colors.indigo, useMaterial3: true),
       routerConfig: _appRouter,
     );
   }
@@ -78,33 +75,35 @@ void main() async {
   // Dio dari apiClientProvider (interceptor 401 + token access otomatis).
   final dio = container.read(apiClientProvider);
 
-  await initFcmToken(onToken: (token) async {
-    // Token terpotong untuk bukti laporan (jangan token penuh).
-    // ignore: avoid_print
-    print('Mendaftarkan device, token FCM: ${maskSecret(token)}');
-    try {
-      // Kirim token ke backend (endpoint POST /devices).
-      final res = await dio.post(
-        '/devices',
-        data: {'fcm_token': token, 'platform': 'android'},
-      );
+  await initFcmToken(
+    onToken: (token) async {
+      // Token terpotong untuk bukti laporan (jangan token penuh).
       // ignore: avoid_print
-      print('FCM token terkirim ke backend (POST /devices): '
-          'status ${res.statusCode}');
-    } on DioException catch (e) {
-      // Backend memang belum ada (example-campus-api.test) -> error ini
-      // DIHARAPKAN dan justru jadi bukti percobaan pengiriman.
-      // ignore: avoid_print
-      print('Gagal kirim token ke backend: ${mapDioException(e).message}');
-    } catch (e) {
-      // ignore: avoid_print
-      print('Gagal kirim token ke backend: $e');
-    }
-  });
-
-  runApp(
-    UncontrolledProviderScope(container: container, child: const MyApp()),
+      print('Mendaftarkan device, token FCM: ${maskSecret(token)}');
+      try {
+        // Kirim token ke backend (endpoint POST /devices).
+        final res = await dio.post(
+          '/devices',
+          data: {'fcm_token': token, 'platform': 'android'},
+        );
+        // ignore: avoid_print
+        print(
+          'FCM token terkirim ke backend (POST /devices): '
+          'status ${res.statusCode}',
+        );
+      } on DioException catch (e) {
+        // Backend memang belum ada (example-campus-api.test) -> error ini
+        // DIHARAPKAN dan justru jadi bukti percobaan pengiriman.
+        // ignore: avoid_print
+        print('Gagal kirim token ke backend: ${mapDioException(e).message}');
+      } catch (e) {
+        // ignore: avoid_print
+        print('Gagal kirim token ke backend: $e');
+      }
+    },
   );
+
+  runApp(UncontrolledProviderScope(container: container, child: const MyApp()));
 
   // Praktikum 3: state foreground + background (diklik) -> deep link.
   listenForeground(_appRouter.go);
