@@ -5,23 +5,20 @@ Folder ini menampung bukti visual Minggu 8. Nama file mengikuti pola
 
 | File | Isi | Status |
 | --- | --- | --- |
-| `week8-issue-1.png` | Halaman issue #1 setelah ditutup PR #2 (`closed as completed`) | belum ada |
-| `week8-pr-2-review.png` | PR #2 dengan review `oninonins` berstatus APPROVED | belum ada |
-| `week8-pr-2-merged.png` | PR #2 setelah squash merge `26f4e1f` | belum ada |
-| `week8-ci-green.png` | Tab Actions dengan workflow `ci` hijau | belum ada |
-| `week8-analyze-format-test.png` | Terminal: analyze bersih, format 0 changed, 28 test lulus | belum ada |
-| `week8-login-validasi.png` | Layar login dengan pesan "Email wajib diisi" | belum ada |
+| [#1](https://github.com/Zuhdiaja/244107020017-mobile-course/issues/1) (`week8-issue-closed.png`) | Halaman issue #1 setelah ditutup PR #2 (`closed as completed`) | belum ada |
+| `week8-pr2-approved-merged.png` | PR #2: badge Merged, reviewer `oninonins` ✓, Development link ke issue #1, `Closes #1` | ✅ |
+| `week8-ci-green.png` | Actions run Success, job `analyze + format + test` hijau (1m 57s) | ✅ |
+| `week8-analyze-format-test.png` | Terminal: analyze bersih, format 0 changed, 28 test lulus | ✅ |
+| `week8-login-validasi.png` | Layar login dengan pesan "Email wajib diisi" | opsional (widget test menguji hal yang sama) |
 
-Cara mengambil yang berbasis terminal (PowerShell):
+Cara mengambil screenshot yang masih kosong:
 
-```powershell
-cd _07_week_7_clean_architecture
-flutter analyze
-dart format --set-exit-if-changed lib test
-flutter test
-```
+**Issue #1** — buka
+[issue #1](https://github.com/Zuhdiaja/244107020017-mobile-course/issues/1),
+pastikan badge Closed dan tulisan `closed this as completed in #2` terlihat,
+lalu simpan sebagai `week8-issue-closed.png`.
 
-Screenshot layar login hanya bisa diambil dengan menjalankan aplikasi di
-perangkat/emulator yang punya `google-services.json`. Kalau belum tersedia,
-bukti pengganti ada di widget test `test/login_page_test.dart` yang menguji
-pesan validasi yang sama tanpa perangkat.
+**Layar login** — hanya dengan perangkat/emulator yang punya
+`google-services.json`. Kalau tidak ada, biarkan kosong; bukti
+penggantinya ada di widget test `test/login_page_test.dart`
+yang menguji pesan validasi yang sama tanpa perangkat.
