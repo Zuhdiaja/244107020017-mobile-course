@@ -109,8 +109,9 @@ void main() {
       expect(find.text('halaman-beranda'), findsNothing);
     });
 
-    testWidgets('input valid lolos validasi dan berpindah halaman',
-        (tester) async {
+    testWidgets('input valid lolos validasi dan berpindah halaman', (
+      tester,
+    ) async {
       await _pumpLoginPage(tester);
 
       await tester.enterText(
