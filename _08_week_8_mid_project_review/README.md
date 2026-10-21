@@ -23,8 +23,9 @@ kolaborasi Git, bukan menambah fitur baru. Aplikasi yang dinilai tetap
 | `dart format --set-exit-if-changed lib test` | ✅ `0 changed` | [§5.1](docs/review-checklist.md#51-tiga-pemeriksaan-mesin) |
 | `flutter test` | ✅ 28 test | [§5.1](docs/review-checklist.md#51-tiga-pemeriksaan-mesin) |
 | Struktur feature-first (tiga grep sterilitas) | ✅ 0 / 0 / 0 | [§5.3](docs/review-checklist.md#53-tiga-grep-sterilitas-dijalankan-ulang-bukan-disalin) |
-| PR kecil di-merge lewat review | ✅ 2 PR | peta di bawah |
+| PR kecil di-merge | ✅ 4 PR (#2 lewat review sejawat) | peta di bawah |
 | CI menolak PR kotor | ✅ | [`.github/workflows/ci.yml`](../.github/workflows/ci.yml) |
+| Review AI diverifikasi sebelum diterapkan | ✅ 4 diterima, 1 diterima sebagian, 1 ditolak, 1 ditunda | [`docs/ai-review-vs-keputusan.md`](docs/ai-review-vs-keputusan.md) |
 
 ## Peta issue dan Pull Request
 
@@ -35,6 +36,7 @@ kolaborasi Git, bukan menambah fitur baru. Aplikasi yang dinilai tetap
 | [#3](https://github.com/Zuhdiaja/244107020017-mobile-course/pull/3) | PR `docs/week8-praktikum2` → `develop` | docs(week8): laporan Praktikum 2 | merged (`4ba1c19`) |
 | [#5](https://github.com/Zuhdiaja/244107020017-mobile-course/pull/5) | PR `chore/week8-format` → `develop` | style: dart format seluruh lib dan test + blok pada if api_client | merged (`a8da40a`) |
 | [#4](https://github.com/Zuhdiaja/244107020017-mobile-course/pull/4) | PR `ci/week8-pipeline` → `develop` | chore(week8): workflow CI, README paruh semester, hasil Praktikum 3 | merged (`70e303d`) |
+| [#6](https://github.com/Zuhdiaja/244107020017-mobile-course/pull/6) | PR `docs/week8-screenshots` → `develop` | docs(week8): bukti visual CI, PR #2, dan tiga cek mesin | merged (`279ff85`) |
 
 PR #4 pertama kali merah di step `dart format` karena dicabangkan sebelum
 PR #5 masuk `develop` ([run berwarna](https://github.com/Zuhdiaja/244107020017-mobile-course/actions/runs/39656242167)).
@@ -107,7 +109,9 @@ satu PR satu tujuan dan < 300 baris.
 
 - 1 issue ditutup otomatis oleh PR (`Closes #1`).
 - 4 PR di-merge ke `develop` (#2, #3, #5, #4), masing-masing < 300 baris.
-- 1 PR di-merahkan CI sebelum dibaca manusia (`dart format` gagal) — aturan "PR kotor ditolak mesin" terbukti bekerja, bukan cuma disetel.
+- 1 PR sempat merah di CI sebelum dibaca manusia (`dart format` gagal) — aturan "PR kotor ditolak mesin" terbukti bekerja, bukan cuma disetel.
+- 1 PR besar (±470 baris) dipecah jadi dua PR 194 dan 276 baris.
+- 4 temuan AI diterima dengan bukti, 1 diterima sebagian, 1 ditolak dengan alasan tertulis, 1 ditunda.
 - 1 PR review timbal balik untuk repository teman.
 - `flutter analyze`, `dart format`, dan `flutter test` hijau, dijaga CI.
 - 12 file sisa Minggu 5–7 diformat; satu lint `curly_braces_in_flow_control_structures` muncul akibat formatter dan diperbaiki.
@@ -116,7 +120,7 @@ satu PR satu tujuan dan < 300 baris.
 
 ![CI hijau](screenshots/week8-ci-green.png)
 
-Run Actions `chore(week8): workflow CI, README paruh semester, hasil Praktikum 3` — job `analyze + format + test` Success (1m 57s, keras dari PR #4).
+Run Actions `chore(week8): workflow CI, README paruh semester, hasil Praktikum 3` — job `analyze + format + test` Success (1m 57s, dipicu PR #4).
 
 ![PR #2 approved dan merged](screenshots/week8-pr2-approved-merged.png)
 
@@ -130,4 +134,5 @@ Terminal: `No issues found!`, `22 files (0 changed)`, `28: All tests passed!`.
 
 - [docs/review-checklist.md](docs/review-checklist.md) — audit riwayat, perbaikan pesan commit, checklist Praktikum 2, hasil Praktikum 3
 - [docs/peer-review.md](docs/peer-review.md) — laporan Praktikum 2: PR, review sejawat, tindak lanjut
+- [docs/ai-review-vs-keputusan.md](docs/ai-review-vs-keputusan.md) — prompt AI, tabel usulan vs keputusan, temuan yang ditolak
 - [screenshots/](screenshots/) — bukti visual

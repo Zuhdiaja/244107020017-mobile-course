@@ -32,7 +32,7 @@ issue #1  →  branch feat/email-validation  →  3 commit kecil  →  PR #2
 | Branch dari `develop` | `feat/email-validation`, bukan dari `main` |
 | PR ke `develop` (bukan `main`) | [#2 feat(auth): pesan validasi email kosong + test](https://github.com/Zuhdiaja/244107020017-mobile-course/pull/2) |
 | Commit kecil & konvensional | `fd8bcf5` `feat(auth)`, `701e17a` `test(auth)`, `54ea748` `style(test)` |
-| Ukuran PR | 4 file, +193 / −18 baris (batas codelab < 300) |
+| Ukuran PR | 4 file, +193 / −18 baris (batas < 300) |
 | Issue ditutup otomatis | `Closes #1` di body PR → issue berstatus `closed / completed` pada detik yang sama dengan merge |
 | Merge | **Squash and merge** → `26f4e1f` di `develop`, 3 commit branch menjadi 1 commit |
 | Branch dihapus | `feat/email-validation` dihapus dari lokal dan remote |
@@ -131,7 +131,7 @@ dart format --set-exit-if-changed lib test
 
 ## 5. Review yang saya lakukan untuk PR teman (timbal balik)
 
-Codelab meminta review dua arah. Review yang saya berikan:
+Tugas meminta review dua arah. Review yang saya berikan:
 
 | | |
 | --- | --- |

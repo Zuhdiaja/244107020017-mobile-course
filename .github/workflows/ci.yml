@@ -32,8 +32,8 @@ jobs:
       - name: flutter analyze
         run: flutter analyze
 
-      # `dart format .` ikut memeriksa folder build/ dan gagal di path panjang,
-      # jadi cakupannya dibatasi ke kode yang ditulis manual.
+      # `dart format .` menyisir build/ milik minggu lain dan gagal bila
+      # dijalankan dari root repo, jadi cakupannya dibatasi ke kode manual.
       - name: dart format
         run: dart format --set-exit-if-changed lib test
 
