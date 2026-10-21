@@ -1,0 +1,24 @@
+{
+  // Sembunyikan folder hasil generate dari Explorer & pencarian.
+  // File-file ini dibuat otomatis oleh Flutter/Dart, bukan kode yang ditulis
+  // manual, dan sudah di-ignore git (lihat .gitignore tiap project).
+  "files.exclude": {
+    "**/.dart_tool": true,
+    "**/build": true,
+    "**/.idea": true,
+    "**/.gradle": true,
+    "**/*.iml": true,
+    "**/.flutter-plugins-dependencies": true
+  },
+  "search.exclude": {
+    "**/.dart_tool": true,
+    "**/build": true,
+    "**/.idea": true,
+    "**/.gradle": true
+  },
+  "files.watcherExclude": {
+    "**/.dart_tool/**": true,
+    "**/build/**": true,
+    "**/.gradle/**": true
+  }
+}
