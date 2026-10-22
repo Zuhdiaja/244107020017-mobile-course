@@ -1,0 +1,41 @@
+name: ci
+
+# Menolak PR kotor sebelum dibaca manusia (codelab Minggu 8, Praktikum 3).
+# Hanya project Minggu 7 yang diuji: aplikasi hasil Minggu 5-7.
+on:
+  pull_request:
+    branches: [develop, main]
+  push:
+    branches: [develop]
+
+defaults:
+  run:
+    # Semua perintah Flutter dijalankan di dalam project, bukan di root repo.
+    working-directory: _07_week_7_clean_architecture
+
+jobs:
+  verify:
+    name: analyze + format + test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: 3.47.5
+          channel: stable
+          cache: true
+
+      - name: flutter pub get
+        run: flutter pub get
+
+      - name: flutter analyze
+        run: flutter analyze
+
+      # `dart format .` menyisir build/ milik minggu lain dan gagal bila
+      # dijalankan dari root repo, jadi cakupannya dibatasi ke kode manual.
+      - name: dart format
+        run: dart format --set-exit-if-changed lib test
+
+      - name: flutter test
+        run: flutter test

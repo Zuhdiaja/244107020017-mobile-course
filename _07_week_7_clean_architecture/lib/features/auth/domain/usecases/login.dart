@@ -8,6 +8,7 @@ import '../repositories/auth_repository.dart';
 /// aturan bisnis validasi format yang harus gagal cepat (fail fast) sebelum
 /// menyentuh repository:
 ///
+/// - email wajib diisi
 /// - email wajib mengandung `@`
 /// - kata sandi minimal 6 karakter
 ///
@@ -23,6 +24,13 @@ class Login {
     required String password,
   }) {
     final trimmedEmail = email.trim();
+
+    if (trimmedEmail.isEmpty) {
+      return Future.value((
+        session: null,
+        failure: const ValidationFailure('Email wajib diisi'),
+      ));
+    }
 
     if (!trimmedEmail.contains('@')) {
       return Future.value((
