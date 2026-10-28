@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 
 import 'core/format.dart';
 import 'features/announcements/presentation/pages/announcement_page.dart';
+import 'features/announcements/presentation/pages/announcements_page.dart';
 import 'features/auth/data/datasources/api_errors.dart';
 import 'features/auth/presentation/pages/login_page.dart';
 import 'features/auth/presentation/providers/auth_providers.dart';
@@ -38,6 +39,10 @@ final _appRouter = GoRouter(
   routes: [
     GoRoute(path: AppRoutes.login, builder: (_, _) => const LoginPage()),
     GoRoute(path: AppRoutes.home, builder: (_, _) => const HomePage()),
+    GoRoute(
+      path: AppRoutes.announcements,
+      builder: (_, _) => const AnnouncementsPage(),
+    ),
     GoRoute(
       path: AppRoutes.announcementPattern,
       builder: (_, state) =>
