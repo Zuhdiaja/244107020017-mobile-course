@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../core/format.dart';
 import '../features/auth/presentation/providers/auth_providers.dart';
 import '../features/notifications/presentation/providers/notifications_providers.dart';
+import '../routes.dart';
 
 /// Halaman beranda aplikasi.
 ///
@@ -78,6 +79,21 @@ class HomePage extends ConsumerWidget {
                   const Text('Selamat datang di Campus Notification App'),
                 ],
               ),
+            ),
+          ),
+          const SizedBox(height: 8),
+          // Kartu pintu masuk daftar pengumuman (Minggu 9: fitur search).
+          Card(
+            elevation: 2,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: ListTile(
+              leading: const Icon(Icons.campaign),
+              title: const Text('Pengumuman'),
+              subtitle: const Text('Daftar pengumuman + pencarian judul'),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: () => context.go(AppRoutes.announcements),
             ),
           ),
           const SizedBox(height: 8),

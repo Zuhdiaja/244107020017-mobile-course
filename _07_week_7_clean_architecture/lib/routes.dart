@@ -5,6 +5,7 @@ class AppRoutes {
 
   static const String login = '/login';
   static const String home = '/';
+  static const String announcements = '/pengumuman';
   static const String announcementPattern = '/pengumuman/:id';
 
   /// Bangun path pengumuman dari id (mis. id "3" -> "/pengumuman/3").
