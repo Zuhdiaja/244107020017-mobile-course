@@ -1,7 +1,8 @@
 import 'package:dio/dio.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:go_router/go_router.dart';
 
 import 'core/format.dart';
@@ -67,57 +68,65 @@ class MyApp extends StatelessWidget {
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  // Wajib sebelum runApp: inisialisasi Firebase
-  await Firebase.initializeApp();
+  // Firebase hanya di platform mobile: web tidak punya konfigurasi
+  // FirebaseOptions (aplikasi ini Android-only sejak Minggu 6), dan FCM
+  // web butuh setup tambahan (service worker + VAPID). Di web, aplikasi
+  // tetap jalan dengan login mock + fitur pengumuman.
+  if (!kIsWeb) {
+    // Wajib sebelum runApp: inisialisasi Firebase
+    await Firebase.initializeApp();
 
-  // Praktikum 3: handler background (top-level, isolate terpisah).
-  registerBackgroundHandler();
+    // Praktikum 3: handler background (top-level, isolate terpisah).
+    registerBackgroundHandler();
+  }
 
   // Perbaikan layar putih (ditemukan saat uji manual Minggu 9): runApp
   // tidak boleh ditahan oleh init FCM. `getToken()` bisa lama/menggantung
   // di emulator, sementara frame pertama harus tampil sesegera mungkin.
   runApp(UncontrolledProviderScope(container: container, child: const MyApp()));
 
-  // Praktikum 2: permission + notifikasi lokal + token lifecycle —
-  // dijalankan SETELAH frame pertama, tanpa menahan UI.
-  await initLocalNotifications();
-  await requestNotificationPermission();
+  if (!kIsWeb) {
+    // Praktikum 2: permission + notifikasi lokal + token lifecycle —
+    // dijalankan SETELAH frame pertama, tanpa menahan UI.
+    await initLocalNotifications();
+    await requestNotificationPermission();
 
-  // Dio dari apiClientProvider (interceptor 401 + token access otomatis).
-  final dio = container.read(apiClientProvider);
+    // Dio dari apiClientProvider (interceptor 401 + token access otomatis).
+    final dio = container.read(apiClientProvider);
 
-  await initFcmToken(
-    onToken: (token) async {
-      // Token terpotong untuk bukti laporan (jangan token penuh).
-      // ignore: avoid_print
-      print('Mendaftarkan device, token FCM: ${maskSecret(token)}');
-      try {
-        // Kirim token ke backend (endpoint POST /devices).
-        final res = await dio.post(
-          '/devices',
-          data: {'fcm_token': token, 'platform': 'android'},
-        );
+    await initFcmToken(
+      onToken: (token) async {
+        // Token terpotong untuk bukti laporan (jangan token penuh).
         // ignore: avoid_print
-        print(
-          'FCM token terkirim ke backend (POST /devices): '
-          'status ${res.statusCode}',
-        );
-      } on DioException catch (e) {
-        // Backend memang belum ada (example-campus-api.test) -> error ini
-        // DIHARAPKAN dan justru jadi bukti percobaan pengiriman.
-        // ignore: avoid_print
-        print('Gagal kirim token ke backend: ${mapDioException(e).message}');
-      } catch (e) {
-        // ignore: avoid_print
-        print('Gagal kirim token ke backend: $e');
-      }
-    },
-  );
+        print('Mendaftarkan device, token FCM: ${maskSecret(token)}');
+        try {
+          // Kirim token ke backend (endpoint POST /devices).
+          final res = await dio.post(
+            '/devices',
+            data: {'fcm_token': token, 'platform': 'android'},
+          );
+          // ignore: avoid_print
+          print(
+            'FCM token terkirim ke backend (POST /devices): '
+            'status ${res.statusCode}',
+          );
+        } on DioException catch (e) {
+          // Backend memang belum ada (example-campus-api.test) -> error ini
+          // DIHARAPKAN dan justru jadi bukti percobaan pengiriman.
+          // ignore: avoid_print
+          print('Gagal kirim token ke backend: ${mapDioException(e).message}');
+        } catch (e) {
+          // ignore: avoid_print
+          print('Gagal kirim token ke backend: $e');
+        }
+      },
+    );
 
-  // Praktikum 3: state foreground + background (diklik) -> deep link.
-  listenForeground(_appRouter.go);
-  setDeepLinkNavigator(_appRouter.go);
-  // State terminated: tangani pesan yang membuka app dari notifikasi.
-  // Dipanggil setelah router siap (runApp di atas).
-  await handleTerminated(_appRouter.go);
+    // Praktikum 3: state foreground + background (diklik) -> deep link.
+    listenForeground(_appRouter.go);
+    setDeepLinkNavigator(_appRouter.go);
+    // State terminated: tangani pesan yang membuka app dari notifikasi.
+    // Dipanggil setelah router siap (runApp di atas).
+    await handleTerminated(_appRouter.go);
+  }
 }
