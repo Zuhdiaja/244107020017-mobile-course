@@ -73,7 +73,13 @@ void main() async {
   // Praktikum 3: handler background (top-level, isolate terpisah).
   registerBackgroundHandler();
 
-  // Praktikum 2: permission + notifikasi lokal + token lifecycle.
+  // Perbaikan layar putih (ditemukan saat uji manual Minggu 9): runApp
+  // tidak boleh ditahan oleh init FCM. `getToken()` bisa lama/menggantung
+  // di emulator, sementara frame pertama harus tampil sesegera mungkin.
+  runApp(UncontrolledProviderScope(container: container, child: const MyApp()));
+
+  // Praktikum 2: permission + notifikasi lokal + token lifecycle —
+  // dijalankan SETELAH frame pertama, tanpa menahan UI.
   await initLocalNotifications();
   await requestNotificationPermission();
 
@@ -107,8 +113,6 @@ void main() async {
       }
     },
   );
-
-  runApp(UncontrolledProviderScope(container: container, child: const MyApp()));
 
   // Praktikum 3: state foreground + background (diklik) -> deep link.
   listenForeground(_appRouter.go);
