@@ -8,7 +8,7 @@ AI-assisted development-nya.
 
 Kebijakan AI diikuti: AI boleh mengusulkan kode, tetapi setiap baris
 dibaca, diverifikasi, diuji, di-refactor, dan keputusannya dijelaskan
-tanpa membuka AI. Nilai ada pada kualitas verifikasi — bukan banyaknya
+tanpa membuka AI. Nilai ada pada kualitas verifikasi - bukan banyaknya
 kode AI yang diterima.
 
 ## Identitas
@@ -42,28 +42,21 @@ kode AI yang diterima.
 
 | Aspek | Isi |
 | --- | --- |
-| Halaman | `/pengumuman` — daftar pengumuman + kolom pencarian judul |
+| Halaman | `/pengumuman` - daftar pengumuman + kolom pencarian judul |
 | Aturan filter | use case `SearchAnnouncements` (domain murni): query dipangkas, case-insensitive, cocok di mana pun di judul, query kosong = semua |
-| Sumber data | `AnnouncementRepositoryImpl` lokal (backend pengumuman belum ada — usulan remote AI ditolak, bukti grep) |
+| Sumber data | `AnnouncementRepositoryImpl` lokal (backend pengumuman belum ada - usulan remote AI ditolak, bukti grep) |
 | Empty state | dua varian: "Belum ada pengumuman" (daftar kosong) dan "Tidak ada pengumuman yang cocok" (query tak cocok) |
 | Integrasi | kartu pintu masuk di Beranda; menekan kartu pengumuman membuka deep link `/pengumuman/:id` yang sudah ada sejak Minggu 6 |
 
 ### Temuan AI dan pembuktiannya
 
-1. **API fiktif** — AI mengusulkan `dio.get('/announcements')`;
+1. **API fiktif** - AI mengusulkan `dio.get('/announcements')`;
    dibuktikan tidak ada dengan grep endpoint seluruh `lib/`.
-2. **Bug case-sensitive** — filter `title.contains(query)` gagal
+2. **Bug case-sensitive** - filter `title.contains(query)` gagal
    menemukan "Ujian" dengan query "ujian"; dibuktikan dengan 3 test
    merah, lalu diperbaiki.
-3. **Pelanggaran dependency rule** — AI menaruh filter di widget dan
+3. **Pelanggaran dependency rule** - AI menaruh filter di widget dan
    mengimpor Riverpod di domain; ditolak dan ditulis ulang.
-
-## Stack (tidak ada package baru)
-
-Dart 3.13.4, Flutter 3.47.5, Riverpod 3.4.3, GoRouter, Dio,
-flutter_secure_storage, Firebase (auth + FCM) — sama dengan Minggu 7.
-Batas prompt "jangan tambah package" dipegang: usulan package fuzzy
-search AI ditolak.
 
 ## Cara menjalankan
 
@@ -95,17 +88,28 @@ flutter test
   1 pelanggaran arsitektur ditolak.
 - Tiga cek mesin hijau: analyze, format, test.
 
+## Bukti visual
+
+Uji manual 3 kondisi query di atas dijalankan via **build web
+(`flutter run -d chrome`)** - sesi emulator di mesin ini tidak stabil,
+dan fitur pencarian pengumuman murni UI + domain tanpa ketergantungan
+Firebase, sehingga perilakunya identik di web maupun Android.
+
+![Query kosong — seluruh pengumuman tampil](screenshots/week9-search-empty-query.png)
+
+Query kosong: 5 pengumuman tampil seluruhnya.
+
+![Query `ujian` - tersisa 1 kartu](screenshots/week9-search-match.png)
+
+Query `ujian`: hanya "Ujian Akhir Semester Ganjil" yang tampil
+(bukti case-insensitive - query huruf kecil menemukan judul huruf kapital).
+
+![Query tak cocok - empty state](screenshots/week9-search-no-match.png)
+
+Query `zzz-tak-ada`: empty state "Tidak ada pengumuman yang cocok".
+
 ## Dokumentasi
 
 - [docs/ai-log.md](docs/ai-log.md) — prompt mentah, output awal AI,
   verifikasi 6 langkah, test merah, tabel keputusan, refleksi
 - [screenshots/](screenshots/) — bukti visual uji manual 3 kondisi query
-
-## Refleksi singkat
-
-Siklus *generate sampai explain* terasa: bagian cepat justru
-meminta AI menulis kode; bagian mahal — dan yang dinilai — adalah
-membuktikan klaimnya. Klaim "endpoint `/announcements`" terbukti
-fiktif dalam satu grep; klaim "filter sudah benar" terbukti salah
-dalam satu test merah. Tanpa langkah verify, keduanya akan lolos ke
-production — itulah *vibe coding* yang mahal di akhir.

@@ -1,4 +1,4 @@
-# Screenshot Minggu 9 — uji manual 3 kondisi query
+# Screenshot Minggu 9 - uji manual 3 kondisi query
 
 Screenshot diambil dari aplikasi yang berjalan (device/emulator
 Android) setelah login, masuk ke kartu **Pengumuman** di Beranda.
@@ -6,9 +6,9 @@ Letakkan tiga file berikut di folder ini:
 
 | File | Kondisi | Isi yang terlihat |
 | --- | --- | --- |
-| `week9-search-empty-query.png` | query kosong | seluruh 5 pengumuman tampil |
+| `week9-search-empty-query.png` | query kosong | semua pengumuman tampil |
 | `week9-search-match.png` | query `ujian` | hanya kartu "Ujian Akhir Semester Ganjil" |
-| `week9-search-no-match.png` | query `zzz-tak-ada` | empty state "Tidak ada pengumuman yang cocok" + ikon search_off |
+| `week9-search-no-match.png` | query `zzz-tak-ada` | empty state "Tidak ada pengumuman yang cocok" |
 
 Cara mengambil:
 

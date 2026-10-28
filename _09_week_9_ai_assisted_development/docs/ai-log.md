@@ -1,4 +1,4 @@
-# AI Log — Minggu 9: AI-Assisted Development
+# AI Log - Minggu 9: AI-Assisted Development
 
 Laporan lengkap siklus *prompt → generate → verify → test → refactor →
 explain* untuk satu fitur kecil: **pencarian judul pengumuman + empty
@@ -55,11 +55,11 @@ Konteks yang ditempel bersama prompt (potongan, bukan seluruh repo):
 
 Konteks yang TIDAK ditempel: token FCM, JWT, isi `google-services.json`,
 `service-account.json`, dan kredensial apa pun. Tidak ada rahasia yang
-dikirim ke AI — semua contoh berupa struktur dan kode non-rahasia.
+dikirim ke AI - semua contoh berupa struktur dan kode non-rahasia.
 
 ## 2. Output awal AI (mentah, sebelum diverifikasi)
 
-Potongan penting dari usulan pertama AI — **belum satu baris pun
+Potongan penting dari usulan pertama AI - **belum satu baris pun
 diterima apa adanya**:
 
 ```dart
@@ -103,11 +103,11 @@ Widget build(BuildContext context, WidgetRef ref) {
 Tiga masalah ditandai saat dibaca baris per baris, sebelum dijalankan
 mesin apa pun:
 
-1. `dio.get('/announcements')` — tidak ada kontrak endpoint seperti itu
+1. `dio.get('/announcements')` - tidak ada kontrak endpoint seperti itu
    di proyek ini (dugaan API fiktif).
-2. `title.contains(query)` — `String.contains` membedakan huruf
+2. `title.contains(query)` - `String.contains` membedakan huruf
    besar/kecil; dugaan bug pencarian.
-3. Filter di `build` + import `flutter_riverpod` di file domain — dua
+3. Filter di `build` + import `flutter_riverpod` di file domain - dua
    pelanggaran dependency rule sekaligus.
 
 ## 3. Verifikasi (6 langkah)
@@ -118,7 +118,7 @@ Usulan AI dibaca lengkap; tiga bagian di atas ditandai sebagai belum
 dipercaya. Sisanya (struktur entity, model mapping, empty state) masuk
 kandidat "terima dengan refactor ringan".
 
-### 3.2 Cek import — domain harus steril
+### 3.2 Cek import - domain harus steril
 
 Grep terhadap `lib/features/announcements/domain` setelah refactor:
 
@@ -128,9 +128,9 @@ hasil   : No matches found
 ```
 
 Domain `announcements` terbukti bebas import Flutter, Dio, maupun
-Riverpod — sama seperti `auth` dan `core`.
+Riverpod - sama seperti `auth` dan `core`.
 
-### 3.3 Cek API — klaim `GET /announcements` dibuktikan tidak ada
+### 3.3 Cek API - klaim `GET /announcements` dibuktikan tidak ada
 
 Grep seluruh `lib/` terhadap pemakaian Dio dan path endpoint:
 
@@ -152,7 +152,7 @@ API, ditolak.
 
 Setelah refactor, analyze bersih (bukti lengkap di §7).
 
-### 3.5 Test merah — bukti bug case-sensitive
+### 3.5 Test merah - bukti bug case-sensitive
 
 Test "filter abaikan huruf besar/kecil" dijalankan **terhadap logika
 versi awal AI** persis (`a.title.contains(trimmed)`). Hasil nyata:
@@ -185,6 +185,13 @@ sebelum `contains`. Setelah perbaikan, 7/7 unit test hijau.
 
 Ketiganya juga dikunci sebagai widget test (§3.5 dan §6), sehingga
 perilaku tidak bisa regresi tanpa test merah.
+
+Catatan pelaksanaan: screenshot diambil dari build web
+(`flutter run -d chrome`) karena sesi emulator tidak stabil di mesin
+uji. Fitur pencarian sendiri tidak menyentuh Firebase sama sekali
+(use case murni + repository lokal), jadi perilaku di web identik
+dengan Android; init Firebase/FCM di `main()` dijaga `kIsWeb` sehingga
+perilaku Android tidak berubah.
 
 ## 4. Debug dengan test merah (langkah reproduksi)
 
@@ -273,22 +280,7 @@ empty state dan tombol hapus query).
 | (review) `TextEditingController` menggantikan state provider | Tolak | controller berumur widget, state pecah, tak bisa diuji tanpa UI |
 | (review) validasi ketat parsing tanggal | Terima sebagian | wajar untuk data remote; data lokal terkontrol, catatan migrasi backend diberi |
 
-## 9. Refleksi
-
-- **Halusinasi AI yang ditemukan**: klaim `GET /announcements` pada
-  backend placeholder, dan filter case-sensitive yang "tampak benar".
-  Keduanya dibuktikan: grep untuk endpoint, test merah untuk filter.
-- **Prompt yang paling membantu**: baris "Batas" (jangan ubah
-  arsitektur, jangan tambah package) — mencegah usulan dependency baru
-  dan menjaga dependency rule tetap jadi kriteria keputusan.
-- **Refactor yang dilakukan**: memindahkan filter dari widget ke use
-  case domain murni, dan memindahkan klaim remote ke repository lokal
-  berbasis JSON.
-- **Keputusan tersulit**: menolak usulan `TextEditingController` —
-  tampak lebih "Flutter-idiomatic", tetapi memecah state pencarian dan
-  mengurangi keterujian; dipertahankan state di provider.
-
-## 10. Cara uji ulang (tanpa perangkat)
+## 9. Cara uji ulang (tanpa perangkat)
 
 ```bash
 cd _07_week_7_clean_architecture
