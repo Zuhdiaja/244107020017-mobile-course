@@ -79,6 +79,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                   ),
                   const SizedBox(height: 28),
                   TextFormField(
+                    key: const Key('login-email-field'),
                     controller: _emailController,
                     keyboardType: TextInputType.emailAddress,
                     decoration: InputDecoration(
@@ -95,6 +96,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                   ),
                   const SizedBox(height: 16),
                   TextFormField(
+                    key: const Key('login-password-field'),
                     controller: _passwordController,
                     obscureText: true,
                     decoration: const InputDecoration(
@@ -108,6 +110,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                   ),
                   const SizedBox(height: 24),
                   FilledButton(
+                    key: const Key('login-submit-button'),
                     style: FilledButton.styleFrom(
                       padding: const EdgeInsets.symmetric(vertical: 16),
                       shape: RoundedRectangleBorder(

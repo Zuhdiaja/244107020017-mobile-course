@@ -104,6 +104,7 @@ class HomePage extends ConsumerWidget {
               borderRadius: BorderRadius.circular(20),
             ),
             child: ListTile(
+              key: const Key('home-assistant-card'),
               leading: const Icon(Icons.smart_toy_outlined),
               title: const Text('Asisten Kampus (AI)'),
               subtitle: const Text('Tanya jawab dengan konteks pengumuman'),
