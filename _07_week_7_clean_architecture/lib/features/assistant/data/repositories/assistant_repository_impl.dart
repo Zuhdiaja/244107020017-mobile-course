@@ -12,18 +12,10 @@ import '../datasources/gemini_api_client.dart';
 /// - memanggil client, lalu mengubah exception menjadi [Failure] agar
 ///   presentation cukup menampilkan `failure.message` (pola fitur auth).
 class AssistantRepositoryImpl implements AssistantRepository {
-  AssistantRepositoryImpl({
-    required this.client,
-    required this.apiKeyStore,
-    this.model = GeminiApiClientDio.defaultModel,
-  });
+  AssistantRepositoryImpl({required this.client, required this.apiKeyStore});
 
   final GeminiApiClient client;
   final ApiKeyStore apiKeyStore;
-
-  /// Nama model dikirim sebagai argumen supaya mudah diganti tanpa
-  /// menyentuh domain (model free-tier bisa berubah sewaktu-waktu).
-  final String model;
 
   @override
   Future<({String reply, Failure? failure})> ask({
@@ -42,9 +34,17 @@ class AssistantRepositoryImpl implements AssistantRepository {
       );
     }
 
+    // Model pilihan pengguna; kosong berarti default. Memungkinkan ganti
+    // model free-tier tanpa menyentuh kode (janji tabel risiko README).
+    final storedModel = await apiKeyStore.readModel();
+    final model = (storedModel == null || storedModel.trim().isEmpty)
+        ? GeminiApiClientDio.defaultModel
+        : storedModel.trim();
+
     try {
       final reply = await client.generateText(
         apiKey: apiKey,
+        model: model,
         system: system,
         question: question,
         context: context,

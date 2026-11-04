@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../routes.dart';
+import '../../data/datasources/gemini_api_client.dart';
 import '../providers/assistant_providers.dart';
 
 /// Halaman Pengaturan AI: menyimpan API key ke secure storage.
@@ -19,12 +20,27 @@ class ApiKeyPage extends ConsumerStatefulWidget {
 
 class _ApiKeyPageState extends ConsumerState<ApiKeyPage> {
   final _controller = TextEditingController();
+  final _modelController = TextEditingController();
   bool _obscure = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadModel();
+  }
 
   @override
   void dispose() {
     _controller.dispose();
+    _modelController.dispose();
     super.dispose();
+  }
+
+  /// Isi kolom model dari penyimpanan; kosong berarti default.
+  Future<void> _loadModel() async {
+    final stored = await ref.read(apiKeyStoreProvider).readModel();
+    if (!mounted) return;
+    _modelController.text = stored ?? '';
   }
 
   Future<void> _save() async {
@@ -34,6 +50,7 @@ class _ApiKeyPageState extends ConsumerState<ApiKeyPage> {
       return;
     }
     await ref.read(apiKeyStoreProvider).save(value);
+    await ref.read(apiKeyStoreProvider).saveModel(_modelController.text.trim());
     // Segarkan status agar banner di halaman chat langsung hilang.
     ref.invalidate(apiKeySavedProvider);
     _controller.clear();
@@ -119,6 +136,22 @@ class _ApiKeyPageState extends ConsumerState<ApiKeyPage> {
                           _obscure ? Icons.visibility : Icons.visibility_off,
                         ),
                         onPressed: () => setState(() => _obscure = !_obscure),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  TextField(
+                    key: const Key('model-field'),
+                    controller: _modelController,
+                    autocorrect: false,
+                    decoration: InputDecoration(
+                      labelText: 'Model Gemini (opsional)',
+                      hintText: GeminiApiClientDio.defaultModel,
+                      helperText:
+                          'Kosongkan untuk memakai model default. Ganti bila '
+                          'model default ditolak kuota/key Anda.',
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
                       ),
                     ),
                   ),

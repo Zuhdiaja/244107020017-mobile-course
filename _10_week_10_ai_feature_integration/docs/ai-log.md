@@ -95,8 +95,8 @@ Tiga cacat terbukti oleh mesin pada output awal (semuanya ditemukan
 4. **Cek keamanan** — API key tidak pernah di-hardcode: grep string
    `AIza` di `lib/` → nol hasil; key hanya lewat `ApiKeyStore`
    (flutter_secure_storage) yang diisi dari halaman Pengaturan AI.
-5. **Test merah/biru** — 22 test baru (5 use case, 3 model, 6 repository,
-   8 widget) lulus bersama 40 test lama (total 62); kasus gagal (key kosong,
+5. **Test merah/biru** — 23 test baru (5 use case, 3 model, 7 repository,
+   8 widget) lulus bersama 40 test lama (total 63); kasus gagal (key kosong,
    429, 400, koneksi putus) dibuktikan lewat fake + DioException, bukan
    API sungguhan.
 6. **Mesin hijau** — `flutter analyze` (No issues), `dart format
@@ -118,16 +118,42 @@ Tiga cacat terbukti oleh mesin pada output awal (semuanya ditemukan
 | 10 | Kartu pintu masuk + rute `/asisten` dan `/asisten/pengaturan` | **Diterima** | Konsisten pola navigasi fitur Minggu 7-9 |
 | 11 | Key `ValueKey` pada field login/kartu beranda untuk uji drive Chrome | **Diterima** | Tidak mengubah perilaku; memungkinkan bukti visual otomatis |
 
-## 6. Bukti mesin hijau (lokal, branch `feat/ai-assistant`)
+## 6. Insiden uji manual dan perbaikannya
+
+Uji manual pertama dengan API key pribadi gagal total: setiap pertanyaan
+berakhir di banner **"Layanan AI sedang bermasalah. Coba beberapa saat
+lagi."** (cabang pemetaan kode 5xx). Dua kelemahan desain terbukti dari
+insiden ini:
+
+1. **Pesan error menyembunyikan penyebab.** Mapper hanya menebak dari kode
+   status; pesan asli server (`error.message`) dibuang, sehingga tidak
+   mungkin tahu apakah masalahnya kuota, model, atau key.
+2. **Model tidak bisa diganti tanpa kode.** Default `gemini-flash-latest`
+   di-hardcode sebagai konstanta client, padahal janji tabel risiko README
+   adalah "ganti model tanpa menyentuh domain".
+
+Perbaikan (commit terpisah setelah insiden):
+
+- `mapAssistantDioException` kini menyertakan kode status **dan** potongan
+  `error.message` server (maks 140 karakter) di pesan `Failure`; ditambah
+  cabang khusus **404** ("Model AI tidak ditemukan. Ganti nama model di
+  Pengaturan AI").
+- Model menjadi **pengaturan tersimpan**: `ApiKeyStore.readModel()` + kolom
+  "Model Gemini (opsional)" di halaman Pengaturan AI; kosong berarti default
+  `gemini-3.5-flash-lite` (flash-lite generasi terbaru, kuota gratis longgar).
+- Test baru membuktikan konfigurasi model: model tersimpan dipakai, kosong
+  kembali ke default (total test naik 62 → 63).
+
+## 7. Bukti mesin hijau (lokal, branch `feat/ai-assistant`)
 
 ```text
 dart format --set-exit-if-changed lib test   -> Formatted 46 files (0 changed)
 flutter analyze                              -> No issues found!
-flutter test                                 -> 62 tests passed (40 lama + 22 baru)
-flutter drive -d chrome (alur manual)        -> 4 screenshot tanpa error
+flutter test                                 -> 63 tests passed (40 lama + 23 baru)
+flutter run -d chrome (alur manual)          -> screenshot bukti jawaban AI
 ```
 
-## 7. Refleksi
+## 8. Refleksi
 
 - **Fitur mana dan mengapa?** Chat asisten — paling natural untuk
   campus_notify: pertanyaan mahasiswa tentang jadwal/UAS/beasiswa bisa

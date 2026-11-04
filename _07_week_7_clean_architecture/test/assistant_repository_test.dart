@@ -10,6 +10,7 @@ class _FakeApiKeyStore extends ApiKeyStore {
   _FakeApiKeyStore([this._value]);
 
   String? _value;
+  String? _model;
 
   @override
   Future<String?> read() async => _value;
@@ -19,27 +20,36 @@ class _FakeApiKeyStore extends ApiKeyStore {
 
   @override
   Future<void> clear() async => _value = null;
+
+  @override
+  Future<String?> readModel() async => _model;
+
+  @override
+  Future<void> saveModel(String value) async => _model = value;
 }
 
-/// Client Gemini palsu: merekam API key dan melempar error bila diminta.
+/// Client Gemini palsu: merekam API key + model, melempar error bila diminta.
 class _FakeClient implements GeminiApiClient {
   _FakeClient({this.reply = 'Jawaban palsu.', this.error});
 
   final String reply;
   final Object? error;
   String? capturedApiKey;
+  String? capturedModel;
   String? capturedModelSystem;
   int calls = 0;
 
   @override
   Future<String> generateText({
     required String apiKey,
+    required String model,
     required String system,
     required String question,
     required String context,
   }) async {
     calls += 1;
     capturedApiKey = apiKey;
+    capturedModel = model;
     capturedModelSystem = system;
     if (error != null) throw error!;
     return reply;
@@ -97,6 +107,24 @@ void main() {
       expect(result.reply, 'UAS 8 Desember.');
       expect(client.capturedApiKey, 'AIza-test');
       expect(client.capturedModelSystem, 'kamu asisten');
+    });
+
+    test('model tersimpan dipakai; kosong kembali ke default', () async {
+      final store = _FakeApiKeyStore('AIza-test');
+      await store.saveModel('gemini-2.5-flash');
+      final client = _FakeClient();
+      await AssistantRepositoryImpl(
+        client: client,
+        apiKeyStore: store,
+      ).ask(system: 's', question: 'q', context: 'c');
+      expect(client.capturedModel, 'gemini-2.5-flash');
+
+      final defaultClient = _FakeClient();
+      await AssistantRepositoryImpl(
+        client: defaultClient,
+        apiKeyStore: _FakeApiKeyStore('AIza-test'),
+      ).ask(system: 's', question: 'q', context: 'c');
+      expect(defaultClient.capturedModel, GeminiApiClientDio.defaultModel);
     });
   });
 

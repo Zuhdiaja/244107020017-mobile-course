@@ -9,6 +9,7 @@ import '../models/gemini_response_model.dart';
 abstract class GeminiApiClient {
   Future<String> generateText({
     required String apiKey,
+    required String model,
     required String system,
     required String question,
     required String context,
@@ -39,23 +40,24 @@ class GeminiApiClientDio implements GeminiApiClient {
   static const defaultBaseUrl =
       'https://generativelanguage.googleapis.com/v1beta';
 
-  /// Model default: alias "flash terbaru" — kuota gratisnya paling longgar
-  /// untuk kebutuhan tugas. Jawaban pendek (maks ~200 token) sesuai system
-  /// prompt "maksimal 2 kalimat" sekaligus mitigasi biaya.
-  static const defaultModel = 'gemini-flash-latest';
+  /// Model default: flash-lite generasi terbaru — kuota gratisnya paling
+  /// longgar dan latensinya kecil untuk chat singkat. Jawaban pendek
+  /// (maks ~200 token) sesuai system prompt "maksimal 2 kalimat" sekaligus
+  /// mitigasi biaya. Bisa diganti dari halaman Pengaturan AI.
+  static const defaultModel = 'gemini-3.5-flash-lite';
 
   final Dio _dio;
-  final String _model = defaultModel;
 
   @override
   Future<String> generateText({
     required String apiKey,
+    required String model,
     required String system,
     required String question,
     required String context,
   }) async {
     final response = await _dio.post<Map<String, dynamic>>(
-      '/models/$_model:generateContent',
+      '/models/$model:generateContent',
       queryParameters: {'key': apiKey},
       data: {
         // System prompt terpisah dari isi percakapan (API Gemini mendukung).

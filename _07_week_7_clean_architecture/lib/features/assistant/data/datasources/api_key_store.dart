@@ -12,10 +12,18 @@ class ApiKeyStore {
 
   final FlutterSecureStorage _storage;
   static const _apiKey = 'ai_api_key';
+  static const _modelKey = 'ai_model';
 
   Future<String?> read() => _storage.read(key: _apiKey);
 
   Future<void> save(String value) => _storage.write(key: _apiKey, value: value);
 
   Future<void> clear() => _storage.delete(key: _apiKey);
+
+  /// Nama model Gemini pilihan pengguna (mis. `gemini-2.5-flash`).
+  /// Kosong berarti pakai default di [GeminiApiClientDio.defaultModel].
+  Future<String?> readModel() => _storage.read(key: _modelKey);
+
+  Future<void> saveModel(String value) =>
+      _storage.write(key: _modelKey, value: value);
 }
