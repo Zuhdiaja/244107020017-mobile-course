@@ -1,9 +1,5 @@
-# Minggu 10 — AI Log: Chat Asisten Kampus (Gemini)
+# Minggu 10 - AI Log: Chat Asisten Kampus (Gemini)
 
-Dokumen ini mencatat proses AI-assisted development untuk fitur Minggu 10,
-mengikuti kebijakan AI codelab: AI boleh membantu merancang dan mengimplementasi
-fitur, tetapi setiap baris dibaca, diverifikasi, diuji, dan keputusannya
-dijelaskan. Nilai ada pada kualitas verifikasi — bukan banyaknya kode AI.
 
 ## 1. Prompt tugas (yang dikirim ke AI coding assistant)
 
@@ -46,7 +42,7 @@ Aturan prompt design (bagian 3 codelab):
 | --- | --- |
 | System prompt | persona + batas: Bahasa Indonesia, maks 2 kalimat, larangan data pribadi |
 | User prompt | pertanyaan pengguna setelah validasi (trim, maks 500 karakter) |
-| Konteks | maksimal 5 judul + tanggal pengumuman lokal — tanpa isi pribadi |
+| Konteks | maksimal 5 judul + tanggal pengumuman lokal - tanpa isi pribadi |
 | Batas | 20 pertanyaan per sesi, `maxOutputTokens: 200` (hemat token) |
 
 ### Contoh jawaban Gemini (uji manual, tier gratis)
@@ -55,7 +51,7 @@ Saat uji manual dengan API key pribadi di Chrome, pertanyaan
 "Kapan UAS dimulai?" dijawab Gemini merujuk konteks judul pengumuman
 ("UAS digelar 8–19 Desember, cek kartu ujian dan ruang di portal akademik."),
 tepat maksimal 2 kalimat. Tanpa API key, aplikasi menampilkan fallback
-ramah — lihat README bagian bukti visual.
+ramah - lihat README bagian bukti visual.
 
 ## 3. Output awal AI (kode yang diusulkan) dan cacatnya
 
@@ -63,43 +59,43 @@ AI mengusulkan fitur lengkap: entity `AssistantMessage`, use case
 `AskAssistant`, `GeminiApiClient` (Dio), `ApiKeyStore`, halaman chat +
 pengaturan, provider, rute, kartu Beranda, dan 4 file test. Kerangka
 awal `AiService` ala codelab (`http` + baca key langsung di service)
-ditolak — lihat tabel keputusan di §5.
+ditolak - lihat tabel keputusan di §5.
 
 Tiga cacat terbukti oleh mesin pada output awal (semuanya ditemukan
 `flutter analyze`, bukan oleh mata):
 
-1. **`valueOrNull` tidak ada di Riverpod 3** — usulan awal memakai
+1. **`valueOrNull` tidak ada di Riverpod 3** - usulan awal memakai
    `ref.watch(...).valueOrNull` di dua halaman; analisis statis gagal
    (`undefined_getter`), diperbaiki ke `.value` (idiom Riverpod 3 yang
    sudah dipakai `home_page.dart`).
-2. **Lint `prefer_initializing_formals` (3 lokasi)** — konstruktor
+2. **Lint `prefer_initializing_formals` (3 lokasi)** - konstruktor
    repository dan use case menyalin parameter ke field privat; diperbaiki
    menjadi initializing formal.
 3. **Parameter `reply` tak terpakai pada fake test** (`unused_element_parameter`)
-   — dihapus, diganti konstanta lokal.
+   - dihapus, diganti konstanta lokal.
 
 ## 4. Verifikasi 6 langkah (alur wajib Minggu 9-10)
 
-1. **Cek privasi prompt** — hanya judul + tanggal pengumuman yang dikirim;
+1. **Cek privasi prompt** - hanya judul + tanggal pengumuman yang dikirim;
    grep `NIK|email|password|access` di folder `features/assistant` → tidak
    ada data pribadi yang meninggalkan perangkat. Token sesi dan API key
    tidak pernah masuk prompt.
-2. **Cek API** — endpoint `POST /models/{model}:generateContent` adalah
+2. **Cek API** - endpoint `POST /models/{model}:generateContent` adalah
    endpoint resmi Google Generative Language API v1beta (dipakai juga oleh
    contoh codelab); response parsing mengikuti kontrak
    `candidates[0].content.parts[*].text`.
-3. **Cek dependency rule** — domain assistant tidak mengimpor Riverpod,
+3. **Cek dependency rule** - domain assistant tidak mengimpor Riverpod,
    Dio, maupun fitur lain (grep import di `domain/` → hanya `core/failures.dart`
    dan file domain sendiri); konteks pengumuman masuk sebagai
    `List<String>` netral, bukan entity fitur announcements.
-4. **Cek keamanan** — API key tidak pernah di-hardcode: grep string
+4. **Cek keamanan** - API key tidak pernah di-hardcode: grep string
    `AIza` di `lib/` → nol hasil; key hanya lewat `ApiKeyStore`
    (flutter_secure_storage) yang diisi dari halaman Pengaturan AI.
-5. **Test merah/biru** — 23 test baru (5 use case, 3 model, 7 repository,
+5. **Test merah/biru** - 23 test baru (5 use case, 3 model, 7 repository,
    8 widget) lulus bersama 40 test lama (total 63); kasus gagal (key kosong,
    429, 400, koneksi putus) dibuktikan lewat fake + DioException, bukan
    API sungguhan.
-6. **Mesin hijau** — `flutter analyze` (No issues), `dart format
+6. **Mesin hijau** - `flutter analyze` (No issues), `dart format
    --set-exit-if-changed lib test` (0 changed), `flutter test` (62 passed).
 
 ## 5. Tabel usulan AI vs keputusan final
@@ -152,19 +148,3 @@ flutter analyze                              -> No issues found!
 flutter test                                 -> 63 tests passed (40 lama + 23 baru)
 flutter run -d chrome (alur manual)          -> screenshot bukti jawaban AI
 ```
-
-## 8. Refleksi
-
-- **Fitur mana dan mengapa?** Chat asisten — paling natural untuk
-  campus_notify: pertanyaan mahasiswa tentang jadwal/UAS/beasiswa bisa
-  dijawab dengan konteks judul pengumuman lokal, tanpa backend baru.
-- **Privasi:** API key dan token sesi tidak pernah dikirim ke Gemini;
-  konteks dibatasi judul pengumuman; system prompt melarang menampilkan
-  data pribadi; key bisa dihapus dari UI.
-- **Fallback:** API gagal (timeout, 429, 500) → `Failure` berbahasa ramah
-  + tombol "Coba lagi" + arah ke pencarian pengumuman lokal (fitur
-  Minggu 9) yang tetap berfungsi tanpa AI.
-- **Pelajaran UX fitur AI mobile:** jawaban harus cepat terasa — gelembung
-  pertanyaan tampil seketika, indikator "mengetik" selama menunggu API,
-  dan kegagalan tampil sebagai banner inline (bukan dialog yang memutus
-  alur) supaya percakapan tidak hilang.
