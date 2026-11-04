@@ -97,6 +97,22 @@ class HomePage extends ConsumerWidget {
             ),
           ),
           const SizedBox(height: 8),
+          // Kartu pintu masuk asisten AI (Minggu 10: fitur AI).
+          Card(
+            elevation: 2,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: ListTile(
+              key: const Key('home-assistant-card'),
+              leading: const Icon(Icons.smart_toy_outlined),
+              title: const Text('Asisten Kampus (AI)'),
+              subtitle: const Text('Tanya jawab dengan konteks pengumuman'),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: () => context.go(AppRoutes.assistant),
+            ),
+          ),
+          const SizedBox(height: 8),
           // Kartu token sesi (Praktikum 1)
           Card(
             elevation: 2,

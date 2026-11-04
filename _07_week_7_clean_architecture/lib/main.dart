@@ -8,6 +8,8 @@ import 'package:go_router/go_router.dart';
 import 'core/format.dart';
 import 'features/announcements/presentation/pages/announcement_page.dart';
 import 'features/announcements/presentation/pages/announcements_page.dart';
+import 'features/assistant/presentation/pages/api_key_page.dart';
+import 'features/assistant/presentation/pages/assistant_page.dart';
 import 'features/auth/data/datasources/api_errors.dart';
 import 'features/auth/presentation/pages/login_page.dart';
 import 'features/auth/presentation/providers/auth_providers.dart';
@@ -48,6 +50,15 @@ final _appRouter = GoRouter(
       path: AppRoutes.announcementPattern,
       builder: (_, state) =>
           AnnouncementPage(id: state.pathParameters['id'] ?? ''),
+    ),
+    // Fitur AI Minggu 10: chat asisten + pengaturan API key.
+    GoRoute(
+      path: AppRoutes.assistant,
+      builder: (_, _) => const AssistantPage(),
+    ),
+    GoRoute(
+      path: AppRoutes.assistantSettings,
+      builder: (_, _) => const ApiKeyPage(),
     ),
   ],
 );
