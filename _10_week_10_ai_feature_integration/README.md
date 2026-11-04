@@ -119,17 +119,31 @@ Uji manual dijalankan di **Chrome (`flutter run -d chrome`)** — sesi emulator
 di mesin ini tidak stabil, dan fitur chat bebas Firebase sehingga perilakunya
 identik di web maupun Android.
 
-![Aplikasi berjalan dengan jawaban AI](screenshots/week10-app-working.png)
+![Beranda dengan kartu Asisten Kampus](screenshots/week10-home-card.png)
+
+Beranda: kartu pintu masuk fitur AI di bawah kartu Pengumuman.
+
+![Chat — banner API key belum diatur](screenshots/week10-chat-banner.png)
+
+Halaman chat: empty state "Tanya Asisten Kampus" + saran pertanyaan, dengan
+banner ramah "API key belum diatur" dan tombol **Atur** menuju pengaturan.
+
+![Chat — fallback error ramah](screenshots/week10-chat-error-fallback.png)
+
+Kirim pertanyaan tanpa key / saat layanan gagal: gelembung pertanyaan tetap
+tercatat, muncul banner error ramah + tombol **Coba lagi** — bukti mitigasi
+risiko "API error/down" dari tabel risiko (bukan crash).
+
+![Pengaturan AI — penyimpanan API key](screenshots/week10-api-key-page.png)
+
+Halaman Pengaturan AI: tempel key Gemini + model (opsional), simpan ke secure
+storage, hapus bila perlu — key tidak pernah tampil utuh setelah tersimpan.
+
+![Hasil asisten AI menjawab](screenshots/week10-hasil-asisten-ai.png)
 
 Alur berhasil dengan API key tersimpan: pertanyaan terkirim dan jawaban AI
-muncul sebagai gelembung di layar (bukan banner error) — bukti integrasi
-Gemini berfungsi end-to-end di Chrome.
-
-State-state lain (empty state, banner "API key belum diatur", fallback error
-ramah + tombol "Coba lagi", halaman Pengaturan AI) dibuktikan lewat widget
-test `test/assistant_page_test.dart` dan insiden 5xx di
-[docs/ai-log.md §6](docs/ai-log.md#6-insiden-uji-manual-dan-perbaikannya),
-bukan lewat screenshot terpisah.
+muncul sebagai gelembung di layar — bukti integrasi Gemini berfungsi
+end-to-end di Chrome.
 
 ## Dokumentasi
 
