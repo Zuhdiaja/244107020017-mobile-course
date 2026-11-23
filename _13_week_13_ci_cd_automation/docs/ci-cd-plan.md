@@ -47,7 +47,7 @@ karena isinya berbeda (kode berubah); Minggu 13 tidak mengubah kode aplikasi.
 Pull request dari fork tidak mendapat akses GitHub Secrets repository. Pipeline
 ini tidak memakai secret sama sekali, sehingga PR dari fork tetap berjalan
 lengkap - konsekuensi dari tidak adanya signing produksi (lihat
-[security-review.md](security-review.md) 2).
+[security-review.md](security-review.md) bagian 2).
 
 ## 4. Versi tool yang di-pin
 
@@ -55,7 +55,7 @@ lengkap - konsekuensi dari tidak adanya signing produksi (lihat
 | --- | --- | --- |
 | Flutter | `3.47.5` | Sama dengan `flutter --version` di mesin pengembang. Kalau hanya `channel: stable`, rilis Flutter baru bisa memerahkan pipeline tanpa satu baris kode berubah. |
 | JDK | Temurin 21 | AGP 9.1.0 / Gradle 9.3.1 pada project ini butuh JDK 21. Runner memakai JDK default yang berbeda, dan kegagalan Gradle karena versi JDK sulit dilacak dari log. |
-| Actions | `@v4` | Tag mayor, bukan SHA. Ini kompromi yang **dicatat sebagai risiko** di [security-review.md](security-review.md) 5: SHA lebih aman tetapi harus diperbarui manual setiap rilis. |
+| Actions | `@v4` | Tag mayor, bukan SHA. Ini kompromi yang **dicatat sebagai risiko** di [security-review.md](security-review.md) bagian 5: SHA lebih aman tetapi harus diperbarui manual setiap rilis. |
 
 ## 5. Urutan langkah
 
@@ -117,7 +117,7 @@ pada varian release, sehingga build release bisa gagal dengan
 Berkas itu **tidak di-commit** (`android/.gitignore`), dan `flutter build`
 menuliskannya ulang tanpa dev dependency. Namun kegagalan ini benar-benar
 terjadi di mesin ini saat build release berjalan bersamaan dengan `flutter test`
-- lihat [ci-cd-report.md](ci-cd-report.md) 4. Pelajarannya: jangan menjalankan
+- lihat [ci-cd-report.md](ci-cd-report.md) bagian 4. Pelajarannya: jangan menjalankan
 test dan build release serentak di satu project.
 
 ## 7. Yang sengaja tidak dimasukkan
@@ -147,7 +147,7 @@ Ini bukan gaya penulisan: PowerShell 5.1 tidak menangkap stderr `flutter.bat`
 lewat `2>&1`, dan `$ErrorActionPreference = 'Stop'` membuat stderr perintah
 native dianggap error fatal. Tanpa penanganan itu, `flutter pub get` yang
 berhasil akan dilaporkan gagal. Bukti dan detailnya di
-[ci-cd-report.md](ci-cd-report.md) 4.3.
+[ci-cd-report.md](ci-cd-report.md) bagian 4.3.
 
 ## 9. Versioning
 

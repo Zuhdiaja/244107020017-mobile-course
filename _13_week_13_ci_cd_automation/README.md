@@ -25,10 +25,11 @@ aplikasi. Workflow-nya ada di root repository karena GitHub Actions hanya membac
 | Pipeline otomatis | hanya Minggu 7 (`ci.yml`) | Minggu 12: format + analyze + test + build |
 | Format & analisis | manual di laptop | dijaga CI, `--fatal-infos` |
 | Test | manual | 130 test otomatis tiap push/PR |
-| Artefak | tidak ada | APK 51,16 MB + AAB 50,16 MB |
+| Artefak | tidak ada | APK 51,16 MB + AAB 50,16 MB (lokal); zip 73,64 MB di CI |
 | Cakupan | diukur lokal | `lcov.info` diunggah sebagai artefak |
 | Versi | `1.0.0+1` | `1.0.0+2` |
 | Build release di mesin ini | belum pernah dicoba | **berhasil** (setelah 1 kegagalan diperbaiki) |
+| Run di GitHub Actions | tidak ada | **2 run hijau**: PR 5 m 9 s, main 7 m 26 s |
 
 ## Workflow
 
@@ -57,15 +58,19 @@ bagian **Artifacts**.
 
 ## Cara menjalankan
 
-### Di CI (setelah commit)
+### Di CI (sudah dijalankan)
 
 ```bash
 git switch -c ci/week13-pipeline
-git add .github/workflows/flutter-ci.yml _13_week_13_ci_cd_automation _12_week_12_testing_quality_assurance
+git add .github/workflows/flutter-ci.yml _13_week_13_ci_cd_automation _12_week_12_testing_quality_assurance/pubspec.yaml
 git commit -m "ci(week13): pipeline format, analyze, test, build APK+AAB"
 git push -u origin ci/week13-pipeline
-# buka tautan "Create pull request", target: develop
+# buka tautan "Create pull request", target: main (BUKAN develop)
 ```
+
+Push ke branch fitur tidak memicu workflow, karena `on.push` hanya mendengarkan
+`main` dan `develop`. Run pertama muncul setelah PR dibuat. Kalau PR sudah ada
+tapi belum ada run, close lalu reopen PR.
 
 ### Di laptop, perintah yang sama dengan CI
 
@@ -83,7 +88,7 @@ dirujuk `upload-artifact`** - kesalahan path tidak akan lolos sampai CI.
 > dengan exit 1 pada pembuatan symlink plugin desktop, padahal paket sudah
 > ter-resolve (`Got dependencies!`). Skrip menandainya sebagai catatan, bukan
 > kegagalan, karena target project ini Android dan CI berjalan di Linux. Detail:
-> [docs/ci-cd-report.md](docs/ci-cd-report.md) 4.3.
+> [docs/ci-cd-report.md](docs/ci-cd-report.md) bagian 4.3.
 
 ### Manual, satu per satu
 
@@ -108,11 +113,17 @@ flutter build appbundle --release
 | `app-release.apk` | 51,16 MB, `versionCode 2`, `versionName 1.0.0` |
 | `app-release.aab` | 50,16 MB |
 
-Status run di GitHub Actions: **belum dijalankan** (tidak ada push). Tabel bukti
-run sengaja dikosongkan di laporan, bukan diisi angka karangan - lihat
-[docs/ci-cd-report.md](docs/ci-cd-report.md) 6.
+Status run di GitHub Actions: **2 run hijau**.
 
-## Dua masalah yang ditemukan sebelum push
+| Run | Pemicu | Commit | Durasi | Hasil | Artefak |
+| --- | --- | --- | --- | --- | --- |
+| `45219722318` | `pull_request` (PR #14) | `c080cc5` | 5 m 9 s | **success** | 73,64 MB + lcov |
+| `45220748442` | `push` ke `main` | `20395b2` | 7 m 26 s | **success** | 73,64 MB + lcov |
+
+Detail per step dan tautan run ada di [docs/ci-cd-report.md](docs/ci-cd-report.md)
+bagian 6.
+
+## Tiga masalah yang ditemukan sebelum push
 
 1. **Build release gagal**: `package dev.flutter.plugins.integration_test does
    not exist`. Penyebabnya `GeneratedPluginRegistrant.java` ditulis ulang oleh
@@ -121,8 +132,13 @@ run sengaja dikosongkan di laporan, bukan diisi angka karangan - lihat
 2. **Angka cakupan tidak stabil**: 674 vs 676 baris, berasal dari konstruktor
    `const` di `lib/core/failures.dart` yang kadang belum ter-compile lintas
    isolate. Stabil dengan `--concurrency=1`.
+3. **`flutter pub get` gagal di Windows tanpa Developer Mode** (hanya pada
+   symlink plugin desktop). CI tidak terpengaruh karena berjalan di Linux.
+   Temuan ini juga membongkar bug di skrip pembungkus saya sendiri: PowerShell
+   5.1 menelan stderr `flutter.bat`, sehingga langkah yang berhasil dilaporkan
+   gagal.
 
-Detail dan log ada di [docs/ci-cd-report.md](docs/ci-cd-report.md) 4.
+Detail dan log ada di [docs/ci-cd-report.md](docs/ci-cd-report.md) bagian 4.
 
 ## Risiko keamanan yang masih terbuka
 
@@ -179,4 +195,4 @@ _13_week_13_ci_cd_automation/
 - **Yang tetap manual:** signing rilis, unggah ke Play Store, uji di perangkat
   (FCM, secure storage), integration test, tinjauan desain, dan kenaikan versi.
 
-Jawaban lengkap ada di [docs/ci-cd-report.md](docs/ci-cd-report.md) 7.
+Jawaban lengkap ada di [docs/ci-cd-report.md](docs/ci-cd-report.md) bagian 7.
