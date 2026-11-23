@@ -1,0 +1,107 @@
+name: Flutter CI
+
+# Pipeline Minggu 13: format, analisis, test, lalu build Android.
+# Menguji project Minggu 12 (`_12_week_12_testing_quality_assurance`) karena
+# itulah aplikasi terbaru; folder minggu lain hanya snapshot historis.
+#
+# `develop` adalah branch default repository ini dan target semua Pull Request,
+# jadi keduanya didengarkan. `main` ikut agar rilis tidak lolos tanpa cek.
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+  workflow_dispatch:
+
+# Job ini hanya membaca kode. Tidak ada step yang butuh menulis ke repository,
+# jadi permission ditahan di level minimum (codelab Minggu 13 §2).
+permissions:
+  contents: read
+
+# Push baru pada branch yang sama membatalkan run lama: menghemat menit runner
+# dan mencegah artefak dari commit usang menutupi commit terbaru.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+defaults:
+  run:
+    # Repository ini berisi banyak snapshot mingguan di root, bukan satu project
+    # Flutter. Semua perintah dijalankan di dalam project yang diuji.
+    working-directory: _12_week_12_testing_quality_assurance
+
+jobs:
+  test-and-build:
+    name: format + analyze + test + build android
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # AGP 9 / Gradle 9 pada project ini butuh JDK 21. Tanpa ini runner memakai
+      # JDK default yang berbeda dan kegagalan Gradle sulit dilacak.
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      # Versi di-pin, bukan `channel: stable` saja: pipeline harus menghasilkan
+      # hasil yang sama minggu depan, bukan mengikuti rilis Flutter terbaru.
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: 3.47.5
+          channel: stable
+          cache: true
+
+      - name: flutter pub get
+        run: flutter pub get
+
+      # Cakupan dibatasi ke kode manual. `dart format .` akan menyisir `build/`
+      # dan folder platform hasil generate, sehingga gagal karena file yang
+      # bukan tulisan manusia. Perintah ini identik dengan yang dijalankan lokal
+      # (lihat _13_week_13_ci_cd_automation/tool/check_ci_locally.ps1).
+      - name: dart format
+        run: dart format --output=none --set-exit-if-changed lib test integration_test test_driver
+
+      # --fatal-infos: info level pun menggagalkan job, supaya ambang mutu tidak
+      # turun diam-diam lewat peringatan yang "cuma info".
+      - name: flutter analyze
+        run: flutter analyze --fatal-infos
+
+      - name: flutter test
+        run: flutter test --coverage
+
+      # Catatan: `defaults.run.working-directory` TIDAK berlaku untuk `uses:`,
+      # jadi path di bawah ditulis dari root repository.
+      - name: Upload laporan cakupan
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-lcov
+          path: _12_week_12_testing_quality_assurance/coverage/lcov.info
+          if-no-files-found: warn
+          retention-days: 7
+
+      # Build hanya dijalankan bila semua pemeriksaan di atas lulus. Build sukses
+      # bukan bukti aplikasi siap rilis: signing masih debug, lihat
+      # _13_week_13_ci_cd_automation/docs/security-review.md.
+      - name: flutter build apk --release
+        run: flutter build apk --release
+
+      - name: flutter build appbundle --release
+        run: flutter build appbundle --release
+
+      - name: Upload APK + AAB
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-builds
+          path: |
+            _12_week_12_testing_quality_assurance/build/app/outputs/flutter-apk/app-release.apk
+            _12_week_12_testing_quality_assurance/build/app/outputs/bundle/release/app-release.aab
+          # Artefak yang hilang harus menggagalkan job: kalau tidak, run "hijau"
+          # tanpa file apa pun dan tidak ada yang menyadarinya.
+          if-no-files-found: error
+          retention-days: 7
