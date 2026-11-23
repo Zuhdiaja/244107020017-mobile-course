@@ -1,8 +1,8 @@
 # Laporan CI/CD - Minggu 13
 
-Dokumen ini memisahkan **apa yang sudah dibuktikan** dari **apa yang belum
-dijalankan**. Angka di bawah dihasilkan dari eksekusi nyata di mesin ini pada
-23 November 2026, bukan perkiraan.
+Dokumen ini memisahkan **apa yang sudah dibuktikan** dari **apa yang masih
+terbuka**. Semua angka di bawah berasal dari eksekusi nyata: 23 November 2026
+di mesin lokal dan di GitHub Actions, bukan perkiraan.
 
 ## 1. Ringkasan
 
@@ -10,12 +10,14 @@ dijalankan**. Angka di bawah dihasilkan dari eksekusi nyata di mesin ini pada
 | --- | --- | --- |
 | Workflow CI ditulis | ✅ | [`.github/workflows/flutter-ci.yml`](../../.github/workflows/flutter-ci.yml) |
 | YAML valid | ✅ | di-parse `pyyaml`: 1 job, 11 step, key `on/permissions/concurrency/defaults/jobs` terbaca |
-| Format, analisis, test | ✅ lulus lokal | 2 |
-| Build APK | ✅ 51,16 MB | 3 |
-| Build AAB | ✅ lihat 3 | 3 |
-| Path artefak cocok dengan hasil build | ✅ | 3 |
-| Versi dinaikkan | ✅ `1.0.0+1` → `1.0.0+2` | `pubspec.yaml` |
-| **Run di GitHub Actions** | ⛔ **belum dijalankan** | 6 |
+| Format, analisis, test | ✅ lulus lokal dan di CI | bagian 2 dan 6 |
+| Build APK | ✅ 51,16 MB (lokal) | bagian 3 |
+| Build AAB | ✅ 50,16 MB (lokal) | bagian 3 |
+| Path artefak cocok dengan hasil build | ✅ | bagian 3 |
+| Versi dinaikkan | ✅ `1.0.0+1` -> `1.0.0+2` | `pubspec.yaml` |
+| Run di GitHub Actions (pull request) | ✅ **success** 5 m 9 s | bagian 6, run `45219722318` |
+| Run di GitHub Actions (push ke main) | ✅ **success** 7 m 26 s | bagian 6, run `45220748442` |
+| Artefak terunggah | ✅ `android-builds` 73,64 MB + `coverage-lcov` | bagian 6 |
 
 ## 2. Pemeriksaan yang sama dengan CI, dijalankan lokal
 
@@ -33,8 +35,8 @@ dart run tool/coverage_summary.dart
 | Langkah | Hasil | Waktu |
 | --- | --- | --- |
 | `dart format` | 58 berkas, **0 changed** | 0,5 s |
-| `flutter analyze --fatal-infos` | **No issues found!** | ~14 s |
-| `flutter test --coverage` | **130 lulus, 0 gagal** | 28–31 s |
+| `flutter analyze --fatal-infos` | **No issues found!** | ~12-15 s |
+| `flutter test --coverage` | **130 lulus, 0 gagal** | 28-37 s |
 | Cakupan | **676/867 baris = 78,0%** | - |
 
 Perintah yang sama tersedia sebagai satu skrip:
@@ -42,10 +44,12 @@ Perintah yang sama tersedia sebagai satu skrip:
 
 ## 3. Artefak
 
+### 3.1 Hasil build lokal
+
 | Berkas | Ukuran | Waktu build | Path (sama dengan workflow) |
 | --- | --- | --- | --- |
-| `app-release.apk` | **51,16 MB** | 105,4 s | `build/app/outputs/flutter-apk/app-release.apk` |
-| `app-release.aab` | **50,16 MB** | 16,4 s | `build/app/outputs/bundle/release/app-release.aab` |
+| `app-release.apk` | **51,16 MB** | 105-180 s | `build/app/outputs/flutter-apk/app-release.apk` |
+| `app-release.aab` | **50,16 MB** | 16-34 s | `build/app/outputs/bundle/release/app-release.aab` |
 
 Kedua berkas berada di path yang persis dirujuk blok `path:` pada step
 `Upload APK + AAB`. Ini diverifikasi otomatis oleh
@@ -61,14 +65,24 @@ versionName    1.0.0
 versionCode    2
 ```
 
+### 3.2 Hasil build di CI
+
+| Artefak | Isi | Ukuran terkompresi |
+| --- | --- | --- |
+| `android-builds` | `app-release.apk` + `app-release.aab` | **73,64 MB** (77.213.475 byte) |
+| `coverage-lcov` | `coverage/lcov.info` | 2,6 KB |
+
+Angka 73,64 MB adalah ukuran zip yang diunggah, bukan jumlah APK+AAB mentah
+(101 MB). Keduanya diunduh dari tab **Actions** -> run -> **Artifacts**.
+
 Build ini ditandatangani **debug keystore** (lihat
-[security-review.md](security-review.md) 1): layak untuk uji internal, bukan
-untuk Play Store.
+[security-review.md](security-review.md) bagian 1): layak untuk uji internal,
+bukan untuk Play Store.
 
 ## 4. Kegagalan nyata yang ditemukan sebelum push
 
-Ini bagian yang membuat pipeline berguna: dua masalah muncul saat menjalankan
-perintah CI di lokal, dan keduanya akan memerahkan job.
+Ini bagian yang membuat pipeline berguna: tiga masalah muncul saat menjalankan
+perintah CI di lokal, dan semuanya akan memerahkan job.
 
 ### 4.1 `package dev.flutter.plugins.integration_test does not exist`
 
@@ -95,18 +109,19 @@ dan build berhasil.
 
 **Pelajaran untuk CI:** step `flutter test` dan `flutter build` dijalankan
 berurutan dalam satu job (bukan paralel, bukan dua job pada working tree yang
-sama). Workflow sudah disusun begitu.
+sama). Workflow sudah disusun begitu, dan urutan itu terbukti benar di runner
+(run `45219722318`: step 8 test lulus, step 10-11 build lulus).
 
-Urutan itu diuji langsung, karena "berurutan" bisa saja tetap bermasalah bila
-`flutter test` meninggalkan registrant yang tidak valid untuk build:
+Urutan itu juga diuji langsung, karena "berurutan" bisa saja tetap bermasalah
+bila `flutter test` meninggalkan registrant yang tidak valid untuk build:
 
 | Uji | Kondisi awal | Hasil |
 | --- | --- | --- |
 | A | registrant berisi 2 referensi `integration_test` (sisa `flutter test`) | build APK **berhasil** 11,8 s; setelah build, referensi `integration_test` menjadi **0** |
-| B | `build/`, `.dart_tool/`, `coverage/`, registrant, `.flutter-plugins-dependencies` dihapus (menyerupai checkout bersih) | urutan CI penuh dijalankan, lihat 4.3 |
+| B | `build/`, `.dart_tool/`, `coverage/`, registrant, `.flutter-plugins-dependencies` dihapus (menyerupai checkout bersih) | urutan CI penuh dijalankan: 5 langkah lulus, build APK 180 s dan AAB 34 s |
 
 Kesimpulan: `flutter build` **menulis ulang** registrant sesuai varian yang
-dibangun, jadi urutan test → build aman. Yang berbahaya hanya menjalankannya
+dibangun, jadi urutan test -> build aman. Yang berbahaya hanya menjalankannya
 paralel, atau memakai berkas registrant lama dari build debug/test.
 
 `GeneratedPluginRegistrant.java` **tidak di-commit** - sudah masuk
@@ -194,38 +209,82 @@ berbahaya daripada tidak ada skrip, karena ia memberi rasa aman palsu.
 
 Alasan tiap keputusan ada di [ci-cd-plan.md](ci-cd-plan.md).
 
-### Cara menjalankannya
+## 6. Bukti eksekusi di GitHub Actions
 
-```powershell
-# 1. dari root repository
-git add .github/workflows/flutter-ci.yml `
-        _13_week_13_ci_cd_automation `
-        _12_week_12_testing_quality_assurance
-git commit -m "ci(week13): pipeline format, analyze, test, build APK+AAB"
+Dua run dijalankan sungguhan, keduanya **hijau**.
 
-# 2. branch baru, bukan langsung ke develop
-git switch -c ci/week13-pipeline
-git push -u origin ci/week13-pipeline
+### 6.1 Run pada pull request
 
-# 3. buka tautan "Create pull request" yang dicetak git, target: develop
-# 4. setelah run hijau, merge; run kedua berjalan pada push ke develop
-```
+| Yang dicatat | Nilai |
+| --- | --- |
+| PR | [#14](https://github.com/Zuhdiaja/244107020017-mobile-course/pull/14) `ci/week13-pipeline` -> `main` |
+| Run ID | **45219722318** |
+| Commit SHA | `c080cc5ef35d8c73956c873dddf44083f71b2ec4` |
+| Pemicu | `pull_request` |
+| Job | `format + analyze + test + build android` |
+| Mulai | 2026-11-23 16:43:35 UTC |
+| Durasi | **5 m 9 s** |
+| Hasil | **success** |
 
-Catatan penting saat men-commit: `_12_week_12_testing_quality_assurance/` saat ini
-**belum pernah di-commit**. Tanpa folder itu, CI tidak punya kode untuk diuji dan
-akan gagal pada `flutter pub get`/`flutter analyze`. Folder itu juga membawa
-`build/` dan `.dart_tool/` yang diabaikan `.gitignore` project, jadi yang masuk
-repository hanya 24 MB kode dan aset.
+Status per step:
 
-Setelah run tersedia, isi tabel 6 dengan angka sebenarnya dari tab **Actions** →
-run → **Summary** (durasi, status per step) dan bagian **Artifacts**
-(`android-builds`).
+| # | Step | Hasil |
+| --- | --- | --- |
+| 1-4 | Set up job, Checkout, Set up JDK, Set up Flutter | success |
+| 5 | `flutter pub get` | success |
+| 6 | `dart format` | success |
+| 7 | `flutter analyze --fatal-infos` | success |
+| 8 | `flutter test --coverage` | success |
+| 9 | Upload laporan cakupan | success |
+| 10 | `flutter build apk --release` | success |
+| 11 | `flutter build appbundle --release` | success |
+| 12 | Upload APK + AAB | success |
 
-## 6. Refleksi
+### 6.2 Run pada push ke main (setelah merge)
 
-### 6.1 Masalah apa yang ditemukan otomatis sebelum perubahan di-merge?
+| Yang dicatat | Nilai |
+| --- | --- |
+| Run ID | **45220748442** |
+| Commit SHA | `20395b288d4d3cd88d5f81d3a59e683f1dff8696` |
+| Pemicu | `push` ke `main` |
+| Mulai | 2026-11-23 16:49 UTC |
+| Durasi | **7 m 26 s** |
+| Hasil | **success** |
+| Artefak | `android-builds` 73,64 MB, `coverage-lcov` 2,6 KB |
+| Kedaluwarsa artefak | 2026-11-30 (retensi 7 hari) |
 
-Tiga kelas masalah, dan semuanya sudah terbukti tertangkap di mesin ini:
+Run kedua ini membuktikan bagian **delivery** dari pipeline: setiap commit yang
+masuk ke `main` menghasilkan APK dan AAB yang bisa diunduh, dari kode yang sudah
+lolos pemeriksaan di PR.
+
+Tautan run:
+`https://github.com/Zuhdiaja/244107020017-mobile-course/actions/runs/45220748442`
+
+### 6.3 Workflow lama tetap berjalan
+
+PR #14 juga memicu `.github/workflows/ci.yml` (Minggu 8, menguji project Minggu 7)
+pada run `45219722119` - juga **success**. Konsekuensinya setiap PR menjalankan
+dua pipeline. `ci.yml` sengaja dibiarkan sebagai bukti Minggu 8; bila ingin
+dihemat, workflow itu bisa dipensiunkan menjadi `workflow_dispatch` saja.
+
+### 6.4 Catatan operasional
+
+- Push ke branch fitur **tidak** memicu workflow, karena `on.push` hanya
+  mendengarkan `main` dan `develop`. Pada PR #13 hal ini sempat membingungkan:
+  run baru muncul setelah PR di-close lalu di-reopen. Untuk run pertama pada
+  branch baru, buat PR lebih dulu.
+- Repository ini menerima rilis lewat PR ke `main`. PR ke `develop` akan
+  memunculkan konflik palsu, karena `develop` tertinggal dan berbeda garis
+  sejarah dengan `main`.
+- Setiap commit berikutnya, termasuk pembaruan dokumen ini, melewati pipeline
+  yang sama. Dua run di atas adalah bukti utama; run dokumentasi tidak dicatat
+  satu per satu agar laporan ini tidak mengejar dirinya sendiri.
+
+## 7. Refleksi
+
+### 7.1 Masalah apa yang ditemukan otomatis sebelum perubahan di-merge?
+
+Tiga kelas masalah, dan semuanya terbukti tertangkap:
 
 1. **Kode tidak terformat** - `dart format --set-exit-if-changed` gagal dalam
    hitungan detik. Tanpa gerbang ini, diff PR dipenuhi perubahan spasi yang
@@ -240,7 +299,7 @@ Yang **tidak** tertangkap: build release gagal karena registrant basi (4.1) baru
 ketahuan saat build dijalankan, bukan saat test. Karena itu build tetap menjadi
 step CI, bukan pekerjaan manual sesekali.
 
-### 6.2 Informasi apa yang dibutuhkan untuk menyelidiki build yang gagal?
+### 7.2 Informasi apa yang dibutuhkan untuk menyelidiki build yang gagal?
 
 Dari pengalaman 4.1, yang benar-benar dipakai:
 
@@ -264,3 +323,15 @@ Dari pengalaman 4.1, yang benar-benar dipakai:
 | Tinjauan kode | Test membuktikan perilaku yang diuji, bukan bahwa desainnya tepat |
 | Pemeriksaan tampilan | Layout dan aksesibilitas tidak dinilai `flutter analyze` |
 | Versi rilis | Kenaikan versi adalah keputusan produk, bukan hasil test |
+
+## 8. Langkah berikutnya
+
+1. Tag `v1.0.0` pada commit yang lolos CI (`20395b2` atau sesudahnya), agar
+   source, log pipeline, dan artefak bisa dihubungkan.
+2. Naikkan build number di setiap unggahan baru; jangan pernah mengulang nomor.
+3. Tangani risiko 1 di [security-review.md](security-review.md): signing rilis
+   lewat secret, hanya pada workflow tag.
+4. Sinkronkan `develop` dari `main` sekali, agar PR yang salah arah tidak lagi
+   memunculkan konflik palsu.
+5. Pertimbangkan integration test di CI setelah ChromeDriver dipin ke versi
+   Chrome runner.
